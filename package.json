@@ -1,0 +1,62 @@
+{
+  "name": "thing-node",
+  "version": "0.0.8",
+  "description": "A Kii enabled IoT library for node.js capable Things",
+  "homepage": "https://github.com/germanviscuso/thing-node",
+  "author": {
+    "name": "German Viscuso",
+    "email": "germanviscuso@gmail.com",
+    "url": "https://github.com/germanviscuso"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "keywords": [
+    "iot",
+    "cloud",
+    "kii",
+    "thing"
+  ],
+  "devDependencies": {
+    "eslint": "^3.1.1",
+    "eslint-config-xo-space": "^0.14.0",
+    "babel-eslint": "^6.1.2",
+    "eslint-plugin-babel": "^3.3.0",
+    "gulp": "^3.9.0",
+    "gulp-eslint": "^2.0.0",
+    "gulp-exclude-gitignore": "^1.0.0",
+    "gulp-line-ending-corrector": "^1.0.1",
+    "gulp-istanbul": "^1.0.0",
+    "gulp-mocha": "^2.0.0",
+    "gulp-plumber": "^1.0.0",
+    "gulp-nsp": "^2.1.0",
+    "gulp-babel": "^6.1.2",
+    "gulp-util": "^3.0.7",
+    "del": "^2.0.2",
+    "babel-core": "^6.11.4",
+    "babel-register": "^6.9.0",
+    "babel-preset-es2015": "6.9.0",
+    "isparta": "^4.0.0",
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3"
+  },
+  "dependencies": {
+    "kii-cloud-sdk": "^2.4.6",
+    "jquery-xhr": "^2.1.3",
+    "request": "^2.72.0",
+    "mqtt": "^1.10.0"
+  },
+  "eslintConfig": {
+    "extends": "xo-space",
+    "env": {
+      "mocha": true
+    }
+  },
+  "repository": "germanviscuso/thing-node",
+  "scripts": {
+    "prepublish": "gulp prepublish",
+    "test": "gulp"
+  },
+  "license": "MIT"
+}
