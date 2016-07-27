@@ -6,6 +6,7 @@ const apiCallTimeout = 15000;
 const appId = null; // TODO Create an app at developer.kii.com and paste the app id here
 const appKey = null; // TODO Create an app at developer.kii.com and paste the app key here
 const appSite = null; // // TODO Create an app at developer.kii.com and paste the site location here ('US', 'EU', 'JP', 'SG' or 'CN3')
+const testVendorThingId = 'myDevice';
 const testThingPassword = '123456';
 const testRegistrationThingFields = {
   _vendorThingID: testVendorThingId,
