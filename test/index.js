@@ -3,10 +3,9 @@ const assert = require('chai').assert;
 import thingNode from '../lib';
 
 const apiCallTimeout = 15000;
-const testAppId = null; // TODO Create an app at developer.kii.com and paste the app id here
-const testAppKey = null; // TODO Create an app at developer.kii.com and paste the app key here
-const testAppSite = null; // // TODO Create an app at developer.kii.com and paste the site location here ('US', 'EU', 'JP', 'SG' or 'CN3')
-const testVendorThingId = 'myDevice';
+const appId = null; // TODO Create an app at developer.kii.com and paste the app id here
+const appKey = null; // TODO Create an app at developer.kii.com and paste the app key here
+const appSite = null; // // TODO Create an app at developer.kii.com and paste the site location here ('US', 'EU', 'JP', 'SG' or 'CN3')
 const testThingPassword = '123456';
 const testRegistrationThingFields = {
   _vendorThingID: testVendorThingId,
@@ -148,12 +147,12 @@ describe('tests', function () {
     thingNode.getSDKVersion().should.be.a('string');
   });
   it('should have the SDK parameters filled in previous to initialization', function () {
-    assert(testAppId, 'kii app id has been filled in at the top of this script');
-    assert(testAppKey, 'kii app key has been filled in at the top of this script');
-    assert(testAppSite, 'kii app site has been filled in at the top of this script');
+    assert(appId, 'kii app id has been filled in at the top of this script');
+    assert(appKey, 'kii app key has been filled in at the top of this script');
+    assert(appSite, 'kii app site has been filled in at the top of this script');
   });
   it('should have the SDK initialized', function () {
-    thingNode.initialize(testAppId, testAppKey, testAppSite);
+    thingNode.initialize(appId, appKey, appSite);
     assert(thingNode.isInitialized(), 'kii sdk is initialized');
   });
   it('should have a test user registered', function (done) {
