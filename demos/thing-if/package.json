@@ -1,7 +1,7 @@
 {
   "name": "thing-node-demo1",
   "version": "0.0.1",
-  "description": "This is a module that runs a simple thing-node demo: a thing that sends random states and where the sensor can be turned on and off",
+  "description": "This is a module that runs a simple thing-node demo: a thing that sends random states and where the thing sensor can be turned on and off",
   "dependencies": {
     "thing-node": "germanviscuso/thing-node"
   },

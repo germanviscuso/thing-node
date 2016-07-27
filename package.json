@@ -9,9 +9,9 @@
     "url": "https://github.com/germanviscuso"
   },
   "files": [
-    "lib"
+    "dist"
   ],
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "keywords": [
     "iot",
     "cloud",
