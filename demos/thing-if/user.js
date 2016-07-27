@@ -29,6 +29,7 @@ var thingCommand = {
   'metadata': {'created_at': '20160715'}
 };
 
+var fetchCommandResults = false;
 var command = process.argv[2];
 if(command) {
   command = parseInt(command);
@@ -41,12 +42,16 @@ if(command) {
       thingCommand.actions[0].enableSensor.sensor = true;
       console.log('Command: turn on Thing sensor');
       break
+    case 2:
+      fetchCommandResults = true;
+      console.log('Command: fetch command results');
+      break
     default:
-      console.log('Invalid command. Enter 0 or 1 (0 means turn off sensor, 1 means turn on sensor)');
+      console.log('Invalid command. Enter 0 or 1 (0 means turn off sensor, 1 means turn on sensor). Or enter 2 to fetch command results');
       process.exit(-2);
   }
 } else {
-  console.log('Missing command. Enter 0 or 1 (0 means turn off sensor, 1 means turn on sensor)');
+  console.log('Missing command. Enter 0 or 1 (0 means turn off sensor, 1 means turn on sensor). Or enter 2 to fetch command results');
   process.exit(-1);
 }
 
@@ -77,13 +82,22 @@ thingNode.getInstance().KiiUser.authenticate(username, userPassword).then(
         }
         else {
           var thing = result2;
-          thingCommand.issuer = 'user:' + theUser.getID();
-          thingNode.sendThingCommand(thing.getThingID(), thingCommand, theUser.getAccessToken(), function (error3, result3) {
-            if(error3)
-              console.log('Error sending thing command: ' + error3.message);
-            else
-              console.log('Command sent successfully: ' + JSON.stringify(result3));
-          });
+          if(!fetchCommandResults) {
+            thingCommand.issuer = 'user:' + theUser.getID();
+            thingNode.sendThingCommand(thing.getThingID(), thingCommand, theUser.getAccessToken(), function (error3, result3) {
+              if (error3)
+                console.log('Error sending thing command: ' + error3.message);
+              else
+                console.log('Command sent successfully: ' + JSON.stringify(result3));
+            });
+          } else {
+            thingNode.getThingCommandsWithResults(thing.getThingID(), null, null, theUser.getAccessToken(), function (error3, result3) {
+              if (error3)
+                console.log('Error fetching thing command results: ' + error3.message);
+              else
+                console.log('Got command results: ' + JSON.stringify(result3));
+            });
+          }
         }
       });
     });
