@@ -270,7 +270,7 @@ describe('tests', function () {
       }
     });
   });
-  it('it should have the user as owner', function (done) {
+  it('should have the user as owner', function (done) {
     let currentUser = thingNode.getInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
