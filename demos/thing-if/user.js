@@ -61,7 +61,7 @@ if(!config.appId || !config.appKey || !config.appSite) {
 console.log('Initializing thing-node...');
 thingNode.initialize(config.appId, config.appKey, config.appSite);
 
-thingNode.getInstance().KiiUser.authenticate(username, userPassword).then(
+thingNode.getKiiInstance().KiiUser.authenticate(username, userPassword).then(
   function(theUser) {
     console.log('User ID is: ' + theUser.getID());
     //Register user as Thing owner
@@ -103,7 +103,7 @@ thingNode.getInstance().KiiUser.authenticate(username, userPassword).then(
 ).catch(
   function(error) {
     if(error.message.indexOf('invalid_grant') > -1) {
-      var userBuilder = thingNode.getInstance().KiiUser.userWithUsername(username, userPassword);
+      var userBuilder = thingNode.getKiiInstance().KiiUser.userWithUsername(username, userPassword);
       userBuilder.register().then(
         function(theUser) {
           console.log('User registered. Please run this script again!');

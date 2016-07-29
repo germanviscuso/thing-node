@@ -14,6 +14,7 @@ var _kii = require('kii-cloud-sdk').create();
 
 var request = require('request');
 var mqtt = require('mqtt');
+var thingifApp = null;
 
 console.log('Kii JS SDK v' + _kii.Kii.getSDKVersion());
 console.log('Kii JS Thing-IF SDK v' + _thingif.getSDKVersion());
@@ -30,11 +31,37 @@ module.exports = {
     @returns {container} The Kii SDK instance
    @example
    // Get Kii SDK instance
-   thingNode.getInstance();
+   thingNode.getKiiInstance();
    */
 
-  getInstance: function getInstance() {
+  getKiiInstance: function getKiiInstance() {
     return _kii;
+  },
+
+
+  /**
+   Returns the thing-if-sdk instance
+    @returns {container} The Thing-IF SDK instance
+   @example
+   // Get Thing-IF SDK instance
+   thingNode.getThingIFInstance();
+   */
+
+  getThingIFInstance: function getThingIFInstance() {
+    return _thingif;
+  },
+
+
+  /**
+   Returns the thing-if-sdk app
+    @returns {App} The Thing-IF SDK app
+   @example
+   // Get Thing-IF SDK app
+   thingNode.getThingIFApp();
+   */
+
+  getThingIFApp: function getThingIFApp() {
+    return thingifApp;
   },
 
 
@@ -43,33 +70,59 @@ module.exports = {
     @returns {String} The Kii SDK version
    */
 
-  getSDKVersion: function getSDKVersion() {
+  getKiiSDKVersion: function getKiiSDKVersion() {
     return _kii.Kii.getSDKVersion();
   },
 
 
-  /** Initialize the Kii SDK
-    Should be the first Kii SDK action your application makes.
+  /**
+   Returns the kii-cloud-sdk version
+    @returns {String} The Kii SDK version
+   */
+
+  getThingIFSDKVersion: function getThingIFSDKVersion() {
+    return _thingif.getSDKVersion();
+  },
+
+
+  /** Initialize the Kii SDK and Thing-IF SDK
+    Should be the first action your application makes.
    @param String appID The application ID found in your Kii developer console
    @param String appKey The application key found in your Kii developer console
    @param String serverLocation The site location found in your Kii developer console (either US, JP, CN3, SG or EU)
    @example
    // Initialize Kii
-   thingNode.getInstance().initialize('<APP_ID_HERE>', '<APP_KEY_HERE>', <APP_SITE_HERE>);
+   thingNode.initialize('<APP_ID_HERE>', '<APP_KEY_HERE>', <APP_SITE_HERE>);
    */
 
   initialize: function initialize(appID, appKey, serverLocation) {
     var kiiSite = _kii.KiiSite.US;
-    if (serverLocation === 'US') kiiSite = _kii.KiiSite.US;
-    if (serverLocation === 'JP') kiiSite = _kii.KiiSite.JP;
-    if (serverLocation === 'CN') kiiSite = _kii.KiiSite.CN;
-    if (serverLocation === 'CN3') kiiSite = _kii.KiiSite.CN3;
-    if (serverLocation === 'SG') kiiSite = _kii.KiiSite.SG;
-    if (serverLocation === 'EU') kiiSite = _kii.KiiSite.EU;
+    var thingifSite = _thingif.Site.US;
+    if (serverLocation === 'US') {
+      kiiSite = _kii.KiiSite.US;
+      thingifSite = _thingif.Site.US;
+    }
+    if (serverLocation === 'JP') {
+      kiiSite = _kii.KiiSite.JP;
+      thingifSite = _thingif.Site.JP;
+    }
+    if (serverLocation === 'CN3') {
+      kiiSite = _kii.KiiSite.CN3;
+      thingifSite = _thingif.Site.CN3;
+    }
+    if (serverLocation === 'SG') {
+      kiiSite = _kii.KiiSite.SG;
+      thingifSite = _thingif.Site.SG;
+    }
+    if (serverLocation === 'EU') {
+      kiiSite = _kii.KiiSite.EU;
+      thingifSite = _thingif.Site.EU;
+    }
     _kii.Kii.initializeWithSite(appID, appKey, kiiSite);
+    thingifApp = new _thingif.App(appID, appKey, thingifSite);
   },
   isInitialized: function isInitialized() {
-    if (_kii.Kii.getAppID()) if (_kii.Kii.getAppKey()) if (_kii.Kii.getBaseURL()) return true;
+    if (_kii.Kii.getAppID()) if (_kii.Kii.getAppKey()) if (_kii.Kii.getBaseURL()) if (thingifApp && thingifApp.appID) if (thingifApp && thingifApp.appKey) if (thingifApp && thingifApp.site) return true;
     return false;
   },
   registerThing: function registerThing(thingFields, callback) {
@@ -464,7 +517,7 @@ module.exports = {
   },
   isThingRegistered: function isThingRegistered(vendorThingId, callback) {
     // uses auth token from current logged in user
-    var currentUser = this.getInstance().Kii.getCurrentUser();
+    var currentUser = this.getKiiInstance().Kii.getCurrentUser();
     if (!currentUser) {
       callback('No Kii user: app user must be logged in', null);
     } else {
