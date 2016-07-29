@@ -1,14 +1,22 @@
 'use strict';
 
+var _thingIfSdk = require('thing-if-sdk');
+
+var _thingif = _interopRequireWildcard(_thingIfSdk);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Created by germanviscuso on 3/28/16.
  */
 require('jquery-xhr');
 var _kii = require('kii-cloud-sdk').create();
+
 var request = require('request');
 var mqtt = require('mqtt');
 
 console.log('Kii JS SDK v' + _kii.Kii.getSDKVersion());
+console.log('Kii JS Thing-IF SDK v' + _thingif.getSDKVersion());
 
 // patch until issue 604 is fixed
 _kii.KiiThingWithToken.prototype.getAccessToken = function () {
