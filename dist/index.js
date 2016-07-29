@@ -735,42 +735,13 @@ module.exports = {
     request(options, _callback);
   },
   onboardThingByUser: function onboardThingByUser(vendorThingId, thingPassword, thingType, user, callback) {
-    var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByOwner+json';
     var accessToken = user.getAccessToken();
     var userId = user.getID();
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/onboardings';
-
-    var options = {
-      url: url,
-      body: {
-        vendorThingID: vendorThingId,
-        thingPassword: thingPassword,
-        thingType: thingType,
-        owner: 'user:' + userId
-      },
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
-        case 200:
-          callback(null, response.body);
-          break;
-        default:
-          callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var apiAuthor = this.getThingIFApiAuthor(accessToken);
+    var onboardOptions = this.getThingIFOnboardOptions(vendorThingId, thingPassword, 'USER:' + userId);
+    apiAuthor.onboardWithVendorThingID(onboardOptions, callback);
+    //var owner = new thingIFSDK.TypedID(thingIFSDK.Types.User, user.userID);
+    //var request = new thingIFSDK.OnboardWithVendorThingIDRequest(vendorThingID, password, owner);
   },
   onboardExistingThing: function onboardExistingThing(thing, thingPassword, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
@@ -1277,5 +1248,11 @@ module.exports = {
     }
 
     request(options, _callback);
+  },
+  getThingIFApiAuthor: function getThingIFApiAuthor(ownerToken) {
+    return new _thingif.APIAuthor(ownerToken, this.getThingIFApp());
+  },
+  getThingIFOnboardOptions: function getThingIFOnboardOptions(vendorThingID, thingPassword, ownerID) {
+    return new _thingif.OnboardWithVendorThingIDRequest(vendorThingID, thingPassword, ownerID);
   }
 };
