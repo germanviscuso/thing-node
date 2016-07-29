@@ -8,11 +8,9 @@
  *
  */
 
+const config = require('../../config.json');
 const thingNode = require('thing-node');
 
-const appId = null; // TODO Create an app at developer.kii.com and paste the app id here
-const appKey = null; // TODO Create an app at developer.kii.com and paste the app key here
-const appSite = null; // // TODO Create an app at developer.kii.com and paste the site location here ('US', 'EU', 'JP', 'SG' or 'CN3')
 const vendorThingId = 'MyThing';
 const username = 'MyUser';
 const userPassword = '123456';
@@ -55,13 +53,13 @@ if(command) {
   process.exit(-1);
 }
 
-if(!appId || !appKey || !appSite) {
-  console.log('Go to developer.kii.com, create an app, and fill in the app ID, app Key and app Site at the top of this script.');
+if(!config.appId || !config.appKey || !config.appSite) {
+  console.log('Go to developer.kii.com, create an app, and copy the app ID, app Key and app Site to ../../config.json');
   process.exit(-2);
 }
 // Initialize with Kii app info (get it at developer.kii.com)
 console.log('Initializing thing-node...');
-thingNode.initialize(appId, appKey, appSite);
+thingNode.initialize(config.appId, config.appKey, config.appSite);
 
 thingNode.getInstance().KiiUser.authenticate(username, userPassword).then(
   function(theUser) {
