@@ -1,6 +1,6 @@
 const should = require('chai').should();
 const assert = require('chai').assert;
-const config = require('../config.json');
+const config = require('../config');
 import thingNode from '../lib';
 
 const apiCallTimeout = 15000;
@@ -153,12 +153,12 @@ describe('tests', function () {
     thingNode.getThingIFSDKVersion().should.be.a('string');
   });
   it('should have the SDK parameters filled in previous to initialization', function () {
-    assert(config.appId, 'kii app id has been filled in ../config.json');
-    assert(config.appKey, 'kii app key has been filled in ../config.json');
-    assert(config.appSite, 'kii app site has been filled in ../config.json');
+    assert(config.kii.appId, 'kii app id has been filled in ../config.js');
+    assert(config.kii.appKey, 'kii app key has been filled in ../config.js');
+    assert(config.kii.appSite, 'kii app site has been filled in ../config.js');
   });
   it('should have the SDKs initialized', function () {
-    thingNode.initialize(config.appId, config.appKey, config.appSite);
+    thingNode.initialize(config.kii.appId, config.kii.appKey, config.kii.appSite);
     assert(thingNode.isInitialized(), 'sdks are initialized');
   });
   it('should have a Thing-IF app', function () {

@@ -8,7 +8,7 @@
  *
  */
 
-const config = require('../../config.json');
+const config = require('../../config.js');
 const thingNode = require('thing-node');
 
 const vendorThingId = 'MyThing';
@@ -53,13 +53,13 @@ if(command) {
   process.exit(-1);
 }
 
-if(!config.appId || !config.appKey || !config.appSite) {
+if(!config.kii.appId || !config.kii.appKey || !config.kii.appSite) {
   console.log('Go to developer.kii.com, create an app, and copy the app ID, app Key and app Site to ../../config.json');
   process.exit(-2);
 }
 // Initialize with Kii app info (get it at developer.kii.com)
 console.log('Initializing thing-node...');
-thingNode.initialize(config.appId, config.appKey, config.appSite);
+thingNode.initialize(config.kii.appId, config.kii.appKey, config.kii.appSite);
 
 thingNode.getKiiInstance().KiiUser.authenticate(username, userPassword).then(
   function(theUser) {
