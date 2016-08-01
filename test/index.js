@@ -638,21 +638,6 @@ describe('tests', function () {
       });
     });
   });
-  it('should have connected (thing)', function (done) {
-    //Important: this test can fail because the online status is not reflected instantly after the MQTT connection
-    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
-      should.not.exist(error);
-      let thing = result;
-      should.exist(thing);
-      thingNode.getThingInfo(testVendorThingId, thing.getAccessToken(), function(error2, result2) {
-        should.not.exist(error2);
-        should.exist(result2);
-        result2.should.have.property('_online');
-        result2.should.have.property('_onlineStatusModifiedAt');
-        done();
-      });
-    });
-  });
   it('should allow to delete a push installation by thing', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
       should.not.exist(error);
@@ -696,6 +681,21 @@ describe('tests', function () {
       });
     });
   });
+  it('should have connected (thing)', function (done) {
+    //Important: this test can fail because the online status is not reflected instantly after the MQTT connection
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.getThingInfo(testVendorThingId, thing.getAccessToken(), function(error2, result2) {
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('_online');
+        result2.should.have.property('_onlineStatusModifiedAt');
+        done();
+      });
+    });
+  });
   it('should allow thing self deletion', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
       should.not.exist(error);
@@ -714,18 +714,6 @@ describe('tests', function () {
       });
     });
   });
-  /*it('should allow user to do thing onboarding', function (done) {
-    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
-    should.exist(currentUser);
-    thingNode.onboardThingByUser(testVendorThingId, testThingPassword, testRegistrationThingFields._thingType, currentUser, function (error, result) {
-      should.not.exist(error);
-      should.exist(result);
-      result.should.have.property('accessToken');
-      result.should.have.property('thingID');
-      result.should.have.property('mqttEndpoint');
-      done();
-    });
-  });*/
   it('should allow user to do thing onboarding', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
@@ -734,7 +722,7 @@ describe('tests', function () {
       should.exist(result);
       result.should.have.property('accessToken');
       result.should.have.property('thingID');
-      result.should.have.property('mqttEndpoint');
+      result.should.have.property('mqttEndPoint');
       done();
     });
   });
