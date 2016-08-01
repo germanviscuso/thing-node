@@ -3,8 +3,9 @@ const assert = require('chai').assert;
 const config = require('../config');
 import thingNode from '../lib';
 
+const random = Math.random() * 1000;
 const apiCallTimeout = 15000;
-const testVendorThingId = 'myDevice';
+const testVendorThingId = 'myDevice' + random;
 const testThingPassword = '123456';
 const testRegistrationThingFields = {
   _vendorThingID: testVendorThingId,
