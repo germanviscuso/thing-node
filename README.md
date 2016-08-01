@@ -12,36 +12,61 @@ For detailed info see ```demos``` and ```test/index.js```
 ```js
 var thingNode = require('thing-node');
 
+const vendorThingId = 'MyThing';
+const thingPassword = 'ThingPassword';
+const thingType = 'ThingType';
+
+const thingRegistrationFields = {
+  _vendorThingID: vendorThingId,
+  _password: thingPassword,
+  _thingType: thingType,
+  _vendor: 'ThingManufacturer'
+};
+
 // Initialize with Kii app info (get it at developer.kii.com)
 thingNode.initialize(<APP_ID>, <APP_KEY>, <APP_SITE>);
 
 // Register Thing in cloud
-thingNode.registerThing(registrationThingFields, function (error, result) {
-  if (error) {
-    // process error
+thingNode.registerOrLoadThing(thingRegistrationFields, function (error, thing) {
+  if (!error) {
+    thingId = thing.getThingID();
+    thingAccessToken = thing.getAccessToken();
+    thingNode.onboardThing(vendorThingId, thingPassword, thingType, thingAccessToken, function (error, onboardInfo) {
+      if(!error) {
+        var state = {
+           'power': true,
+           'temperature': 33
+        };
+        thingNode.registerThingState(thingId, state, thingAccessToken, function (error, stateRegInfo) {
+          if (!error)
+            console.log('Thing-IF state registration successful: ' + stateRegInfo);
+          else
+            console.log('Error registering Thing state: ' + error);
+        });
+      } else {
+        console.log('Error onboarding Thing: ' + error);
+      }
+    });
   } else {
-    // registered! process result 
+    console.log('Error loading or registering thing: ' + error);
   }
 });
 ```
 
+## TODO
+
+- Provide Promises besides a callback based API
+
 ## Development
 
-Test: ```npm test```
-
-Node dev version: ```4.2.1```
-
-Npm dev version:  ```3.5.2```
-
-Node deploy version: ```0.12.14```
-
-Npm deploy version: ```2.15.1```
-
-Test deploy platform: ```Raspberry Pi Zero``
-
-Kii JS SDK: ```2.4.7```
-
-Thing-IF JS SDK: ```1.0```
+- Test: ```npm test```
+- Node dev version: ```4.2.1```
+- Npm dev version:  ```3.5.2```
+- Node deploy version: ```0.12.14```
+- Npm deploy version: ```2.15.1```
+- Test deploy platform: ```Raspberry Pi Zero``
+- Kii JS SDK: ```2.4.7```
+- Thing-IF JS SDK: ```1.0```
 
 ## Logging
 
@@ -53,7 +78,6 @@ node ../kii-cli/bin/kii-logs.js -t --site us --app-id 6f673d3a --app-key 42790da
 ## License
 
 MIT © [German Viscuso](https://github.com/germanviscuso)
-
 
 [npm-image]: https://badge.fury.io/js/thing-node.svg
 [npm-url]: https://npmjs.org/package/thing-node
