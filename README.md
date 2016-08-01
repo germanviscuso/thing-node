@@ -8,7 +8,7 @@ $ npm install --save thing-node
 ```
 
 ## Usage
-For detailed info see ```test/index.js```
+For detailed info see ```demos``` and ```test/index.js```
 ```js
 var thingNode = require('thing-node');
 
@@ -37,9 +37,15 @@ Node deploy version: ```0.12.14```
 
 Npm deploy version: ```2.15.1```
 
-Kii SDK: ```2.4.6```
+Test deploy platform: ```Raspberry Pi Zero``
 
-Kii log:
+Kii JS SDK: ```2.4.7```
+
+Thing-IF JS SDK: ```1.0```
+
+## Logging
+
+How to see what's happening on the cloud side (Kii log):
 ```
 node ../kii-cli/bin/kii-logs.js -t --site us --app-id 6f673d3a --app-key 42790dac7aef69298846bca4acbd7f2a --client-id f61402883dde7b8839526d18f8680840 --client-secret <CLIENT_SECRET>
 ```
