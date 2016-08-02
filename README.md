@@ -56,14 +56,16 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, thing) {
 ## TODO
 
 - Provide Promises besides a callback based API
+- Provide API documentation (JSDoc)
 
 ## Development
 
-- Test: ```npm test```
+- Test: ```npm test``` or ```gulp```
 - Node dev version: ```4.2.1```
 - Npm dev version:  ```3.5.2```
 - Node deploy version: ```0.12.14```
 - Npm deploy version: ```2.15.1```
+- Continuous integration: ```Travis```
 - Test deploy platform: ```Raspberry Pi Zero``
 - Kii JS SDK: ```2.4.7```
 - Thing-IF JS SDK: ```1.0```
@@ -72,7 +74,7 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, thing) {
 
 How to see what's happening on the cloud side (Kii log):
 ```
-node ../kii-cli/bin/kii-logs.js -t --site us --app-id 6f673d3a --app-key 42790dac7aef69298846bca4acbd7f2a --client-id f61402883dde7b8839526d18f8680840 --client-secret <CLIENT_SECRET>
+node ../kii-cli/bin/kii-logs.js -t --site us --app-id <KII_APP_ID> --app-key <KII_APP_KEY> --client-id <KII_CLIENT_ID> --client-secret <KII_CLIENT_SECRET>
 ```
 
 ## License

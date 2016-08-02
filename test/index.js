@@ -718,7 +718,7 @@ describe('tests', function () {
   it('should allow user to do thing onboarding', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
-    thingNode.onboardThingByUser(testVendorThingId, testThingPassword, testRegistrationThingFields._thingType, currentUser, function (error, result) {
+    thingNode.onboardThingByUser(testVendorThingId, testThingPassword, currentUser, function (error, result) {
       should.not.exist(error);
       should.exist(result);
       result.should.have.property('accessToken');

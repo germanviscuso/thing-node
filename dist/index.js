@@ -300,7 +300,7 @@ module.exports = {
     });
   },
   registerOwnerSimpleFlow: function registerOwnerSimpleFlow(vendorThingId, userOrGroup, callback) {
-    var url = _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/VENDOR_THING_ID:' + vendorThingId + '/ownership';
+    var url = thingifApp.getKiiCloudBaseUrl() + '/things/VENDOR_THING_ID:' + vendorThingId + '/ownership';
     var accessToken = void 0;
 
     if (this.isKiiUser(userOrGroup)) {
@@ -347,7 +347,7 @@ module.exports = {
     request(options, _callback);
   },
   registerOwnerRequestPin: function registerOwnerRequestPin(thing, userOrGroup, initiatedByThing, callback) {
-    var url = _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/' + thing.getThingID() + '/ownership/request';
+    var url = thingifApp.getKiiCloudBaseUrl() + '/things/' + thing.getThingID() + '/ownership/request';
     var accessToken = void 0,
         currentUser = void 0;
 
@@ -410,7 +410,7 @@ module.exports = {
     }
 
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/' + thing.getThingID() + '/ownership/confirm',
+      url: thingifApp.getKiiCloudBaseUrl() + '/things/' + thing.getThingID() + '/ownership/confirm',
       body: {
         code: pinCode
       },
@@ -449,7 +449,7 @@ module.exports = {
   },
   listThingOwners: function listThingOwners(thing, callback) {
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/' + 'VENDOR_THING_ID:' + thing.getVendorThingID() + '/ownership',
+      url: thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + thing.getVendorThingID() + '/ownership',
       json: true,
       method: 'get',
       headers: {
@@ -535,7 +535,7 @@ module.exports = {
       };
 
       var options = {
-        url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId,
+        url: thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId,
         json: true,
         method: 'head',
         headers: {
@@ -551,7 +551,7 @@ module.exports = {
   },
   getThingInfo: function getThingInfo(vendorThingId, accessToken, callback) {
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId,
+      url: thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId,
       json: true,
       method: 'get',
       headers: {
@@ -630,7 +630,7 @@ module.exports = {
     var contentType = 'application/vnd.kii.InstallationCreationRequest+json';
 
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/installations',
+      url: thingifApp.getKiiCloudBaseUrl() + '/installations',
       body: {
         deviceType: 'MQTT',
         development: !productionEnvironment
@@ -660,7 +660,7 @@ module.exports = {
   },
   getThingPush: function getThingPush(thingAccessToken, installationId, callback) {
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/installations/' + installationId,
+      url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId,
       json: true,
       method: 'get',
       headers: {
@@ -685,7 +685,7 @@ module.exports = {
   },
   deleteThingPush: function deleteThingPush(thingAccessToken, installationId, callback) {
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/installations/' + installationId,
+      url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId,
       json: true,
       method: 'delete',
       headers: {
@@ -710,7 +710,7 @@ module.exports = {
   },
   getMQTTEndpoint: function getMQTTEndpoint(thingAccessToken, installationId, callback) {
     var options = {
-      url: _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/installations/' + installationId + '/mqtt-endpoint',
+      url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId + '/mqtt-endpoint',
       json: true,
       method: 'get',
       headers: {
@@ -734,21 +734,24 @@ module.exports = {
 
     request(options, _callback);
   },
-  onboardThingByUser: function onboardThingByUser(vendorThingId, thingPassword, thingType, user, callback) {
+  onboardThingByUser: function onboardThingByUser(vendorThingId, thingPassword, user, callback) {
     var accessToken = user.getAccessToken();
     var userId = user.getID();
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
-    var onboardOptions = this.getThingIFOnboardOptions(vendorThingId, thingPassword, 'USER:' + userId);
-    apiAuthor.onboardWithVendorThingID(onboardOptions, callback);
-    //var owner = new thingIFSDK.TypedID(thingIFSDK.Types.User, user.userID);
-    //var request = new thingIFSDK.OnboardWithVendorThingIDRequest(vendorThingID, password, owner);
+    var owner = new _thingif.TypedID(_thingif.Types.User, userId);
+    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, owner);
+    apiAuthor.onboardWithVendorThingID(request).then(function (result) {
+      callback(null, result);
+    }).catch(function (err) {
+      callback(err, null);
+    });
   },
   onboardExistingThing: function onboardExistingThing(thing, thingPassword, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
     var accessToken = thing.getAccessToken();
     var thingId = thing.getThingID();
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/onboardings';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
 
     var options = {
       url: url,
@@ -781,8 +784,8 @@ module.exports = {
   },
   onboardThing: function onboardThing(vendorThingId, thingPassword, thingType, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByThing+json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/onboardings';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
 
     var options = {
       url: url,
@@ -816,8 +819,8 @@ module.exports = {
   },
   registerThingState: function registerThingState(thingId, thingState, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/states';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/states';
 
     var options = {
       url: url,
@@ -848,8 +851,8 @@ module.exports = {
   },
   getLatestThingState: function getLatestThingState(thingId, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/states';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/states';
 
     var options = {
       url: url,
@@ -878,8 +881,8 @@ module.exports = {
   },
   sendThingCommand: function sendThingCommand(thingId, thingCommand, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/commands';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/commands';
 
     var options = {
       url: url,
@@ -909,8 +912,8 @@ module.exports = {
   },
   sendThingCommandResult: function sendThingCommandResult(thingId, thingCommandResult, commandId, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/commands/' + commandId + '/action-results';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/commands/' + commandId + '/action-results';
 
     var options = {
       url: url,
@@ -940,8 +943,8 @@ module.exports = {
   },
   getThingCommandWithResult: function getThingCommandWithResult(thingId, commandId, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/commands/' + commandId;
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/commands/' + commandId;
 
     var options = {
       url: url,
@@ -970,8 +973,8 @@ module.exports = {
   },
   getThingCommandsWithResults: function getThingCommandsWithResults(thingId, paginationKey, bestEffortLimit, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/commands';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/commands';
     if (paginationKey) url += '?paginationKey=' + paginationKey;
     if (bestEffortLimit) url += '?bestEffortLimit=' + bestEffortLimit;
 
@@ -1002,8 +1005,8 @@ module.exports = {
   },
   registerThingTrigger: function registerThingTrigger(thingId, trigger, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers';
 
     var options = {
       url: url,
@@ -1033,8 +1036,8 @@ module.exports = {
   },
   getThingTriggerServerCodeResult: function getThingTriggerServerCodeResult(thingId, paginationKey, bestEffortLimit, triggerId, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers/' + triggerId + '/results/server-code';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId + '/results/server-code';
     if (paginationKey) url += '?paginationKey=' + paginationKey;
     if (bestEffortLimit) url += '?bestEffortLimit=' + bestEffortLimit;
 
@@ -1065,8 +1068,8 @@ module.exports = {
   },
   enableOrDisableThingTrigger: function enableOrDisableThingTrigger(thingId, triggerId, enable, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
     if (enable) url += '/enable';else url += '/disable';
 
     var options = {
@@ -1096,8 +1099,8 @@ module.exports = {
   },
   deleteThingTrigger: function deleteThingTrigger(thingId, triggerId, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
 
     var options = {
       url: url,
@@ -1126,8 +1129,8 @@ module.exports = {
   },
   updateThingTrigger: function updateThingTrigger(thingId, triggerId, trigger, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
 
     var options = {
       url: url,
@@ -1157,8 +1160,8 @@ module.exports = {
   },
   getThingTrigger: function getThingTrigger(thingId, triggerId, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
 
     var options = {
       url: url,
@@ -1187,8 +1190,8 @@ module.exports = {
   },
   getThingTriggers: function getThingTriggers(thingId, paginationKey, bestEffortLimit, accessToken, callback) {
     var contentType = 'application/json';
-    var baseUrl = _kii.Kii.getBaseURL().substring(0, _kii.Kii.getBaseURL().length - 4);
-    var url = baseUrl + '/thing-if/apps/' + _kii.Kii.getAppID() + '/targets/thing:' + thingId + '/triggers';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/targets/thing:' + thingId + '/triggers';
     if (paginationKey) url += '?paginationKey=' + paginationKey;
     if (bestEffortLimit) url += '?bestEffortLimit=' + bestEffortLimit;
 
@@ -1219,7 +1222,7 @@ module.exports = {
   },
   sendThingScopeObject: function sendThingScopeObject(thingId, isVendorId, bucketName, data, accessToken, callback) {
     var contentType = 'application/vnd.' + _kii.Kii.getAppID() + '.' + bucketName + '+json';
-    var url = _kii.Kii.getBaseURL() + '/apps/' + _kii.Kii.getAppID() + '/things/';
+    var url = thingifApp.getKiiCloudBaseUrl() + '/things/';
     if (isVendorId) url += 'VENDOR_THING_ID:' + thingId;else url += thingId;
     url += '/buckets/' + bucketName + '/objects';
 
