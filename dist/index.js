@@ -736,15 +736,10 @@ module.exports = {
   },
   onboardThingByUser: function onboardThingByUser(vendorThingId, thingPassword, user, callback) {
     var accessToken = user.getAccessToken();
-    var userId = user.getID();
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
-    var owner = new _thingif.TypedID(_thingif.Types.User, userId);
-    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, owner);
-    apiAuthor.onboardWithVendorThingID(request).then(function (result) {
-      callback(null, result);
-    }).catch(function (err) {
-      callback(err, null);
-    });
+    var issuerId = new _thingif.TypedID(_thingif.Types.User, user.getID());
+    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, issuerId);
+    apiAuthor.onboardWithVendorThingID(request, callback);
   },
   onboardExistingThing: function onboardExistingThing(thing, thingPassword, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
@@ -879,36 +874,16 @@ module.exports = {
 
     request(options, _callback);
   },
+  sendThingCommandWithParameters: function sendThingCommandWithParameters(schemaName, schemaVersion, commandActions, userId, thingId, accessToken, callback) {
+    var apiAuthor = this.getThingIFApiAuthor(accessToken);
+    var targetId = new _thingif.TypedID(_thingif.Types.Thing, thingId);
+    var issuerId = new _thingif.TypedID(_thingif.Types.User, userId);
+    var request = new _thingif.PostCommandRequest(schemaName, schemaVersion, commandActions, issuerId);
+    apiAuthor.postNewCommand(targetId, request, callback);
+  },
   sendThingCommand: function sendThingCommand(thingId, thingCommand, accessToken, callback) {
-    var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/commands';
-
-    var options = {
-      url: url,
-      body: thingCommand,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
-        case 201:
-          callback(null, response.body);
-          break;
-        default:
-          callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    // command title, description and metadata will be discarded
+    this.sendThingCommandWithParameters(thingCommand.schema, thingCommand.schemaVersion, thingCommand.actions, thingCommand.issuer.replace('user:', ''), thingId, accessToken, callback);
   },
   sendThingCommandResult: function sendThingCommandResult(thingId, thingCommandResult, commandId, accessToken, callback) {
     var contentType = 'application/json';

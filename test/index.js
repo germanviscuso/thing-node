@@ -130,7 +130,6 @@ const testThingUpdatedTrigger = {
   }
 };
 
-
 describe('tests', function () {
   var tempPin;
   var tempInstallationId;
@@ -138,6 +137,27 @@ describe('tests', function () {
   var tempTriggerId, tempTriggerId2;
 
   this.timeout(apiCallTimeout);
+
+  /*before(function(done) {
+    //set up code here
+    done();
+  });*/
+
+  after(function(done) {
+    //clean up code, no callback/no output
+    //delete user
+    var user = thingNode.getKiiInstance().KiiUser.getCurrentUser();
+    if(user) {
+      user.delete(null);
+    }
+    //delete thing
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, thing) {
+      if(!error) {
+        thing.deleteThing(null);
+      }
+    });
+    done();
+  });
 
   it('should be up and running', function () {
     should.exist(thingNode);
@@ -154,9 +174,9 @@ describe('tests', function () {
     thingNode.getThingIFSDKVersion().should.be.a('string');
   });
   it('should have the SDK parameters filled in previous to initialization', function () {
-    assert(config.kii.appId, 'kii app id has been filled in ../config.js');
-    assert(config.kii.appKey, 'kii app key has been filled in ../config.js');
-    assert(config.kii.appSite, 'kii app site has been filled in ../config.js');
+    assert(config.kii.appId, 'kii app id has been filled in ../config.js or as environment variable');
+    assert(config.kii.appKey, 'kii app key has been filled in ../config.js or as environment variable');
+    assert(config.kii.appSite, 'kii app site has been filled in ../config.js or as environment variable');
   });
   it('should have the SDKs initialized', function () {
     thingNode.initialize(config.kii.appId, config.kii.appKey, config.kii.appSite);
@@ -823,6 +843,32 @@ describe('tests', function () {
         should.exist(tempCommandId);
         done();
       });
+    });
+  });
+  it('should allow thing to send thing command with parameters', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      testThingCommand.issuer = 'user:' + currentUser.getID();
+      thingNode.sendThingCommandWithParameters(
+        testThingCommand.schema,
+        testThingCommand.schemaVersion,
+        testThingCommand.actions,
+        testThingCommand.issuer.replace('user:', ''),
+        thing.getThingID(),
+        thing.getAccessToken(),
+        function (error2, result2) {
+          should.not.exist(error2);
+          should.exist(result2);
+          result2.should.have.property('commandID');
+          tempCommandId = result2['commandID'];
+          should.exist(tempCommandId);
+          done();
+        }
+      );
     });
   });
   it('should allow thing to send thing command result', function (done) {
