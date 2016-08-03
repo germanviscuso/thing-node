@@ -1241,6 +1241,72 @@ describe('tests', function () {
       });
     });
   });
+  it('should allow owner to get the vendor thing id of the thing', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.getVendorThingId(thing.getThingID(), currentUser.getAccessToken(), function (error2, vendorThingId) {
+        should.not.exist(error2);
+        should.exist(vendorThingId);
+        vendorThingId.should.equal(testVendorThingId);
+        done();
+      });
+    });
+  });
+  it('should allow thing to get the vendor thing id of itself', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.getVendorThingId(thing.getThingID(), thing.getAccessToken(), function (error2, vendorThingId) {
+        should.not.exist(error2);
+        should.exist(vendorThingId);
+        vendorThingId.should.equal(testVendorThingId);
+        done();
+      });
+    });
+  });
+  it('should allow owner to change vendor thing id and password of the thing', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.updateVendorThingId(thing.getThingID(), 'newMyDevice' , 'newMyDevicePassword', currentUser.getAccessToken(), function (error2, result2) {
+        should.not.exist(error2);
+        should.exist(result2);
+        assert(result2, 'thing info updated');
+        thingNode.updateVendorThingId(thing.getThingID(), testVendorThingId , testThingPassword, currentUser.getAccessToken(), function (error3, result3) {
+          should.not.exist(error3);
+          should.exist(result3);
+          assert(result3, 'thing info updated');
+          done();
+        });
+      });
+    });
+  });
+  it('should allow thing to change vendor thing id and password of itself', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.updateVendorThingId(thing.getThingID(), 'newMyDevice' , 'newMyDevicePassword', thing.getAccessToken(), function (error2, result2) {
+        should.not.exist(error2);
+        should.exist(result2);
+        assert(result2, 'thing info updated');
+        thingNode.updateVendorThingId(thing.getThingID(), testVendorThingId , testThingPassword, thing.getAccessToken(), function (error3, result3) {
+          should.not.exist(error3);
+          should.exist(result3);
+          assert(result3, 'thing info updated');
+          done();
+        });
+      });
+    });
+  });
   it('should allow owner to delete thing', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);

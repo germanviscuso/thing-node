@@ -742,40 +742,7 @@ module.exports = {
     apiAuthor.onboardWithVendorThingID(request, callback);
   },
   onboardExistingThing: function onboardExistingThing(thing, thingPassword, callback) {
-    var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
-    var accessToken = thing.getAccessToken();
-    var thingId = thing.getThingID();
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
-    var options = {
-      url: url,
-      body: {
-        thingID: thingId,
-        thingPassword: thingPassword
-      },
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
-        case 200:
-          callback(null, response.body);
-          break;
-        default:
-          callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    this.onboardThing(thing.getVendorThingID(), thingPassword, '', thing.getAccessToken(), callback);
   },
   onboardThing: function onboardThing(vendorThingId, thingPassword, thingType, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByThing+json';
@@ -1232,5 +1199,21 @@ module.exports = {
   },
   getThingIFOnboardOptions: function getThingIFOnboardOptions(vendorThingID, thingPassword, ownerID) {
     return new _thingif.OnboardWithVendorThingIDRequest(vendorThingID, thingPassword, ownerID);
+  },
+  getVendorThingId: function getVendorThingId(thingId, accessToken, callback) {
+    var apiAuthor = this.getThingIFApiAuthor(accessToken);
+    apiAuthor.getVendorThingID(thingId).then(function (vendorThingId) {
+      callback(null, vendorThingId);
+    }).catch(function (err) {
+      callback(err, null);
+    });
+  },
+  updateVendorThingId: function updateVendorThingId(thingId, newVendorThingId, newPassword, accessToken, callback) {
+    var apiAuthor = this.getThingIFApiAuthor(accessToken);
+    apiAuthor.updateVendorThingID(thingId, newVendorThingId, newPassword).then(function () {
+      callback(null, true);
+    }).catch(function (err) {
+      callback(err, null);
+    });
   }
 };
