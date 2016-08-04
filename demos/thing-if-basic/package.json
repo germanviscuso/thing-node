@@ -1,0 +1,15 @@
+{
+  "name": "thing-if-basic",
+  "version": "0.0.1",
+  "description": "This is a module that runs a simple thing-node demo: a thing that sends random states and where the thing sensor can be turned on and off from a user script",
+  "dependencies": {
+    "thing-node": "^0.1.2"
+  },
+  "keywords": [
+    "kii",
+    "iot",
+    "thing"
+  ],
+  "author": "German Viscuso <germanviscuso@gmail.com> (https://github.com/germanviscuso)",
+  "license": "MIT"
+}
