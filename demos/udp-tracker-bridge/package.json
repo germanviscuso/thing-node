@@ -1,0 +1,16 @@
+{
+  "name": "thing-if-udp-tracker-bridge",
+  "version": "0.0.1",
+  "description": "A demo that sets up a UDP server to receive incoming location tracker data to then send it to Kii via the Thing Interaction Framework (Thing-IF)",
+  "dependencies": {
+    "thing-node": "^0.1.2"
+  },
+  "keywords": [
+    "kii",
+    "iot",
+    "thing",
+    "firmware"
+  ],
+  "author": "German Viscuso <germanviscuso@gmail.com> (https://github.com/germanviscuso)",
+  "license": "MIT"
+}
