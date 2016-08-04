@@ -1,7 +1,7 @@
 /**
  * Created by germanviscuso on 7/15/16.
  *
- * This sample shows a generic User side implementation that sends commands to a Kii Thing after claiming
+ * This sample shows a generic controller implementation that sends commands to a Kii Thing after claiming
  * ownership of it. The commands are received by a Thing via MQTT and acted upon. To see/run the Thing
  * side script please check the file thing.js located in the same directory as this script.
  * For more info about Thing-IF see: https://docs.kii.com/en/starts/thingifsdk

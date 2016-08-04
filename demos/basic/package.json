@@ -1,7 +1,7 @@
 {
   "name": "thing-if-basic",
   "version": "0.0.1",
-  "description": "This is a module that runs a simple thing-node demo: a thing that sends random states and where the thing sensor can be turned on and off from a user script",
+  "description": "This is a module that runs a simple thing-node demo: a thing that sends random states and where the thing sensor can be turned on and off from a controller script",
   "dependencies": {
     "thing-node": "^0.1.2"
   },
