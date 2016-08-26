@@ -1,5 +1,5 @@
 # thing-node [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
-> A Kii enabled IoT library for node.js capable Things
+A Kii enabled IoT library for node.js capable Things
 
 ## Installation
 
