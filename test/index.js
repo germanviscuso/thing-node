@@ -4,7 +4,7 @@ const config = require('../config');
 import thingNode from '../lib';
 
 const random = Math.random() * 1000;
-const apiCallTimeout = 15000;
+const apiCallTimeout = 20000;
 const testVendorThingId = 'myDevice' + random;
 const testThingPassword = '123456';
 const testRegistrationThingFields = {
