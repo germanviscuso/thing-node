@@ -4,7 +4,7 @@ const config = require('../config');
 import thingNode from '../lib';
 
 const random = Math.random() * 1000;
-const apiCallTimeout = 20000;
+const apiCallTimeout = 25000;
 const testVendorThingId = 'myDevice' + random;
 const testThingPassword = '123456';
 const testRegistrationThingFields = {
@@ -1265,6 +1265,33 @@ describe('tests', function () {
         should.not.exist(error2);
         should.exist(vendorThingId);
         vendorThingId.should.equal(testVendorThingId);
+        done();
+      });
+    });
+  });
+  it('should not allow thing to configure itself as gateway', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.setThingAsGateway(thing.getThingID(), thing.getAccessToken(), function (error2, result2) {
+        should.exist(error2);
+        should.not.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should allow owner to configure thing as gateway', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.setThingAsGateway(thing.getThingID(), currentUser.getAccessToken(), function (error2, result2) {
+        should.not.exist(error2);
+        should.exist(result2);
+        assert(result2, 'Thing registered as gateway');
         done();
       });
     });
