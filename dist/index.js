@@ -734,17 +734,24 @@ module.exports = {
 
     request(options, _callback);
   },
-  onboardThingByUser: function onboardThingByUser(vendorThingId, thingPassword, user, callback) {
+  onboardWithVendorThingIdByUser: function onboardWithVendorThingIdByUser(vendorThingId, thingPassword, user, thingType, thingProperties, callback) {
     var accessToken = user.getAccessToken();
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
     var issuerId = new _thingif.TypedID(_thingif.Types.User, user.getID());
-    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, issuerId);
+    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, issuerId, thingType, thingProperties);
     apiAuthor.onboardWithVendorThingID(request, callback);
   },
-  onboardExistingThing: function onboardExistingThing(thing, thingPassword, callback) {
-    this.onboardThing(thing.getVendorThingID(), thingPassword, '', thing.getAccessToken(), callback);
+  onboardWithThingIdByUser: function onboardWithThingIdByUser(thingId, thingPassword, user, thingType, thingProperties, callback) {
+    var accessToken = user.getAccessToken();
+    var apiAuthor = this.getThingIFApiAuthor(accessToken);
+    var issuerId = new _thingif.TypedID(_thingif.Types.User, user.getID());
+    var request = new _thingif.OnboardWithThingIDRequest(thingId, thingPassword, issuerId, thingType, thingProperties);
+    apiAuthor.onboardWithThingID(request, callback);
   },
-  onboardThing: function onboardThing(vendorThingId, thingPassword, thingType, accessToken, callback) {
+  onboardMyself: function onboardMyself(thing, thingPassword, callback) {
+    this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, 'STANDALONE', thing.getAccessToken(), callback);
+  },
+  onboardWithVendorThingIdByThing: function onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, thingProperties, layoutPosition, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByThing+json';
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
@@ -754,7 +761,46 @@ module.exports = {
       body: {
         vendorThingID: vendorThingId,
         thingPassword: thingPassword,
-        thingType: thingType
+        thingType: thingType,
+        thingProperties: thingProperties,
+        layoutPosition: layoutPosition
+      },
+      json: true,
+      method: 'post',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': contentType,
+        'Accept': '*/*'
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) callback(error, null);else switch (response.statusCode) {
+        case 200:
+          callback(null, response.body);
+          break;
+        default:
+          callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
+  onboardWithThingIdByThing: function onboardWithThingIdByThing(thingId, thingPassword, thingType, thingProperties, layoutPosition, accessToken, callback) {
+    var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
+
+    var options = {
+      url: url,
+      body: {
+        thingID: thingId,
+        thingPassword: thingPassword,
+        thingType: thingType,
+        thingProperties: thingProperties,
+        layoutPosition: layoutPosition
       },
       json: true,
       method: 'post',

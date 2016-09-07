@@ -5,7 +5,7 @@ import thingNode from '../lib';
 
 const random = Math.random() * 1000;
 const apiCallTimeout = 25000;
-const testVendorThingId = 'myDevice' + random;
+const testVendorThingId = 'myTestDevice' + random;
 const testThingPassword = '123456';
 const testRegistrationThingFields = {
   _vendorThingID: testVendorThingId,
@@ -677,7 +677,7 @@ describe('tests', function () {
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.onboardExistingThing(thing, testThingPassword, function (error2, result2) {
+      thingNode.onboardMyself(thing, testThingPassword, function (error2, result2) {
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('accessToken');
@@ -692,7 +692,22 @@ describe('tests', function () {
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.onboardThing(testVendorThingId, testThingPassword, testRegistrationThingFields._thingType, thing.getAccessToken(), function (error2, result2) {
+      thingNode.onboardWithVendorThingIdByThing(testVendorThingId, testThingPassword, testRegistrationThingFields._thingType, {}, 'STANDALONE', thing.getAccessToken(), function (error2, result2) {
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('accessToken');
+        result2.should.have.property('thingID');
+        result2.should.have.property('mqttEndpoint');
+        done();
+      });
+    });
+  });
+  it('should allow thing to do self onboarding with thing id', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.onboardWithThingIdByThing(thing.getThingID(), testThingPassword, testRegistrationThingFields._thingType, {}, "STANDALONE", thing.getAccessToken(), function (error2, result2) {
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('accessToken');
@@ -735,16 +750,33 @@ describe('tests', function () {
       });
     });
   });
-  it('should allow user to do thing onboarding', function (done) {
+  it('should allow user to do thing onboarding by vendor id', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
-    thingNode.onboardThingByUser(testVendorThingId, testThingPassword, currentUser, function (error, result) {
+    thingNode.onboardWithVendorThingIdByUser(testVendorThingId, testThingPassword, currentUser, '', {}, function (error, result) {
       should.not.exist(error);
       should.exist(result);
       result.should.have.property('accessToken');
       result.should.have.property('thingID');
       result.should.have.property('mqttEndPoint');
       done();
+    });
+  });
+  it('should allow user to do thing onboarding by thing id', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.onboardWithThingIdByUser(thing.getThingID(), testThingPassword, currentUser, '', {}, function (error, result) {
+        should.not.exist(error);
+        should.exist(result);
+        result.should.have.property('accessToken');
+        result.should.have.property('thingID');
+        result.should.have.property('mqttEndPoint');
+        done();
+      });
     });
   });
   it('should allow thing to register thing state', function (done) {

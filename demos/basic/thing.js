@@ -46,8 +46,8 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, result) 
     thingAccessToken = thing.getAccessToken();
 
     console.log('Onboarding Thing to Thing-IF...');
-    thingNode.onboardThing(vendorThingId, thingPassword, thingType, thingAccessToken, function (error, result) {
-      if(error) {
+    thingNode.onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, {}, 'STANDALONE', thingAccessToken, function (error, result) {
+      if (error) {
         console.log('Error onboarding Thing: ' + error);
       } else {
         // MQTT loop
@@ -80,20 +80,20 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, result) 
               {'enableSensor': {'succeeded': true}}
             ]
           };
-          if(json.actions[0].enableSensor.sensor == true) {
+          if (json.actions[0].enableSensor.sensor == true) {
             sensor_enabled = true;
             thingNode.sendThingCommandResult(thing.getThingID(), thingCommandResult, commandId, thing.getAccessToken(), function (error2, result2) {
-              if(error) {
+              if (error) {
                 console.log('Error sending thing command result: ' + error);
               } else {
                 console.log('Command result sent!');
               }
             });
           }
-          if(json.actions[0].enableSensor.sensor == false) {
+          if (json.actions[0].enableSensor.sensor == false) {
             sensor_enabled = false;
             thingNode.sendThingCommandResult(thing.getThingID(), thingCommandResult, commandId, thing.getAccessToken(), function (error2, result2) {
-              if(error) {
+              if (error) {
                 console.log('Error sending thing command result: ' + error);
               } else {
                 console.log('Command result sent!');
@@ -107,7 +107,7 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, result) 
           var state = {
             'power': sensor_enabled
           };
-          if(sensor_enabled) {
+          if (sensor_enabled) {
             var sensor_value = Math.random() * 1000;
             state.sensor_value = sensor_value;
           }

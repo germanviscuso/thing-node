@@ -52,8 +52,8 @@ server.on('listening', function () {
       thingAccessToken = thing.getAccessToken();
 
       console.log('Onboarding Thing to Thing-IF...');
-      thingNode.onboardThing(vendorThingId, thingPassword, thingType, thingAccessToken, function (error, result) {
-        if(error) {
+      thingNode.onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, {}, 'STANDALONE', thingAccessToken, function (error, result) {
+        if (error) {
           console.log('Error onboarding Thing: ' + error);
         } else {
           // MQTT loop
