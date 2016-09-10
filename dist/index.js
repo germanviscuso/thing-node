@@ -748,9 +748,6 @@ module.exports = {
     var request = new _thingif.OnboardWithThingIDRequest(thingId, thingPassword, issuerId, thingType, thingProperties);
     apiAuthor.onboardWithThingID(request, callback);
   },
-  onboardMyself: function onboardMyself(thing, thingPassword, callback) {
-    this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, 'STANDALONE', thing.getAccessToken(), callback);
-  },
   onboardWithVendorThingIdByThing: function onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, thingProperties, layoutPosition, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByThing+json';
     var baseUrl = thingifApp.getThingIFBaseUrl();
@@ -802,6 +799,48 @@ module.exports = {
         thingProperties: thingProperties,
         layoutPosition: layoutPosition
       },
+      json: true,
+      method: 'post',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': contentType,
+        'Accept': '*/*'
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) callback(error, null);else switch (response.statusCode) {
+        case 200:
+          callback(null, response.body);
+          break;
+        default:
+          callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
+  onboardMyself: function onboardMyself(thing, thingPassword, callback) {
+    this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, 'STANDALONE', thing.getAccessToken(), callback);
+  },
+  onboardEndNodeWithVendorThingId: function onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, gatewayVendorThingId, endNodeThingProperties, endNodeThingType, owner, accessToken, callback) {
+    var contentType = 'application/vnd.kii.OnboardingEndNodeWithGatewayVendorThingID+json';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
+    var body = {
+      endNodeVendorThingID: endNodeVendorThingId,
+      endNodePassword: endNodePassword,
+      gatewayVendorThingID: gatewayVendorThingId
+    };
+    if (endNodeThingProperties) body.endNodeThingProperties = endNodeThingProperties;
+    if (endNodeThingType) body.endNodeThingType = endNodeThingType;
+    if (owner) body.owner = owner;
+
+    var options = {
+      url: url,
+      body: body,
       json: true,
       method: 'post',
       headers: {

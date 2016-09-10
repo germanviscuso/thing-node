@@ -672,7 +672,7 @@ describe('tests', function () {
       });
     });
   });
-  it('should allow thing to do self onboarding', function (done) {
+  it('should allow thing onboarding itself', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
       should.not.exist(error);
       let thing = result;
@@ -707,13 +707,41 @@ describe('tests', function () {
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.onboardWithThingIdByThing(thing.getThingID(), testThingPassword, testRegistrationThingFields._thingType, {}, "STANDALONE", thing.getAccessToken(), function (error2, result2) {
+      thingNode.onboardWithThingIdByThing(thing.getThingID(), testThingPassword, testRegistrationThingFields._thingType, {}, 'GATEWAY', thing.getAccessToken(), function (error2, result2) {
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('accessToken');
         result2.should.have.property('thingID');
         result2.should.have.property('mqttEndpoint');
         done();
+      });
+    });
+  });
+  it('should not allow thing onboard an end node over itself without owner', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      let endNodeVendorThingId = 'endnode_' + testVendorThingId;
+      let endNodePassword = 'endnode_' + testThingPassword;
+      thingNode.onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, '', thing.getAccessToken(), function (error2, result2) {
+        should.exist(error2);
+        should.not.exist(result2);
+        done();
+        /*result2.should.have.property('accessToken');
+        result2.should.have.property('thingID');
+        result2.should.have.property('mqttEndpoint');
+        thingNode.loadThingWithVendorThingId(endNodeVendorThingId, endNodePassword, function (error3, result3) {
+          should.not.exist(error3);
+          should.exist(result3);
+          let thing2 = result3;
+          thingNode.deleteThing(thing2, function (error4, result4) {
+            if(error4) console.log(error4);
+            should.not.exist(error4);
+            should.exist(result4);
+            done();
+          });
+        });*/
       });
     });
   });
