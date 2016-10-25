@@ -20,9 +20,7 @@ console.log('Kii JS SDK v' + _kii.Kii.getSDKVersion());
 console.log('Kii JS Thing-IF SDK v' + _thingif.getSDKVersion());
 
 // patch until issue 604 is fixed
-_kii.KiiThingWithToken.prototype.getAccessToken = function () {
-  if (this._accessToken) return this._accessToken;else return this._adminToken;
-};
+//_kii.KiiThingWithToken.prototype.getAccessToken = function () { if (this._accessToken) return this._accessToken; else return this._adminToken; };
 
 module.exports = {
 
@@ -234,16 +232,7 @@ module.exports = {
   loadThingWithVendorThingId: function loadThingWithVendorThingId(vendorThingId, password, callback) {
     this.authenticateAsThing(vendorThingId, password, function (error, context) {
       if (error) callback(error, null);else {
-        var authThing = context.getAuthenticatedThing();
-        var token = authThing.getAccessToken();
-        _kii.KiiThingWithToken.loadWithVendorThingID(vendorThingId, {
-          success: function success(returnedThing) {
-            if (callback) callback(null, returnedThing);
-          },
-          failure: function failure(error) {
-            if (callback) callback(error, null);
-          }
-        }, token);
+        callback(null, context.getAuthenticatedThing());
       }
     });
   },
@@ -734,21 +723,21 @@ module.exports = {
 
     request(options, _callback);
   },
-  onboardWithVendorThingIdByUser: function onboardWithVendorThingIdByUser(vendorThingId, thingPassword, user, thingType, thingProperties, callback) {
+  onboardWithVendorThingIdByUser: function onboardWithVendorThingIdByUser(vendorThingId, thingPassword, user, thingType, thingProperties, firmwareVersion, dataGroupingInterval, layoutPosition, callback) {
     var accessToken = user.getAccessToken();
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
     var issuerId = new _thingif.TypedID(_thingif.Types.User, user.getID());
-    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, issuerId, thingType, thingProperties);
+    var request = new _thingif.OnboardWithVendorThingIDRequest(vendorThingId, thingPassword, issuerId, thingType, thingProperties, firmwareVersion, dataGroupingInterval, layoutPosition);
     apiAuthor.onboardWithVendorThingID(request, callback);
   },
-  onboardWithThingIdByUser: function onboardWithThingIdByUser(thingId, thingPassword, user, thingType, thingProperties, callback) {
+  onboardWithThingIdByUser: function onboardWithThingIdByUser(thingId, thingPassword, user, dataGroupingInterval, layoutPosition, callback) {
     var accessToken = user.getAccessToken();
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
     var issuerId = new _thingif.TypedID(_thingif.Types.User, user.getID());
-    var request = new _thingif.OnboardWithThingIDRequest(thingId, thingPassword, issuerId, thingType, thingProperties);
+    var request = new _thingif.OnboardWithThingIDRequest(thingId, thingPassword, issuerId, dataGroupingInterval, layoutPosition);
     apiAuthor.onboardWithThingID(request, callback);
   },
-  onboardWithVendorThingIdByThing: function onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, thingProperties, layoutPosition, accessToken, callback) {
+  onboardWithVendorThingIdByThing: function onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, thingProperties, dataGroupingInterval, layoutPosition, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByThing+json';
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
@@ -760,7 +749,8 @@ module.exports = {
         thingPassword: thingPassword,
         thingType: thingType,
         thingProperties: thingProperties,
-        layoutPosition: layoutPosition
+        layoutPosition: layoutPosition,
+        dataGroupingInterval: dataGroupingInterval
       },
       json: true,
       method: 'post',
@@ -785,7 +775,7 @@ module.exports = {
 
     request(options, _callback);
   },
-  onboardWithThingIdByThing: function onboardWithThingIdByThing(thingId, thingPassword, thingType, thingProperties, layoutPosition, accessToken, callback) {
+  onboardWithThingIdByThing: function onboardWithThingIdByThing(thingId, thingPassword, thingType, thingProperties, dataGroupingInterval, layoutPosition, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
@@ -797,7 +787,8 @@ module.exports = {
         thingPassword: thingPassword,
         thingType: thingType,
         thingProperties: thingProperties,
-        layoutPosition: layoutPosition
+        layoutPosition: layoutPosition,
+        dataGroupingInterval: dataGroupingInterval
       },
       json: true,
       method: 'post',
@@ -823,16 +814,17 @@ module.exports = {
     request(options, _callback);
   },
   onboardMyself: function onboardMyself(thing, thingPassword, callback) {
-    this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, 'STANDALONE', thing.getAccessToken(), callback);
+    this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, '1_MINUTE', 'STANDALONE', thing.getAccessToken(), callback);
   },
-  onboardEndNodeWithVendorThingId: function onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, gatewayVendorThingId, endNodeThingProperties, endNodeThingType, owner, accessToken, callback) {
+  onboardEndNodeWithVendorThingId: function onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, gatewayVendorThingId, endNodeThingProperties, endNodeThingType, owner, dataGroupingInterval, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingEndNodeWithGatewayVendorThingID+json';
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
     var body = {
       endNodeVendorThingID: endNodeVendorThingId,
       endNodePassword: endNodePassword,
-      gatewayVendorThingID: gatewayVendorThingId
+      gatewayVendorThingID: gatewayVendorThingId,
+      dataGroupingInterval: dataGroupingInterval
     };
     if (endNodeThingProperties) body.endNodeThingProperties = endNodeThingProperties;
     if (endNodeThingType) body.endNodeThingType = endNodeThingType;
@@ -1313,6 +1305,7 @@ module.exports = {
         'X-Kii-AppID': _kii.Kii.getAppID(),
         'X-Kii-AppKey': _kii.Kii.getAppKey(),
         'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json',
         'Accept': '*/*'
       }
     };

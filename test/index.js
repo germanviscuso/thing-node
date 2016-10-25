@@ -241,6 +241,8 @@ describe('tests', function () {
   });
   it('should allow checking if a thing exists', function (done) {
     thingNode.isThingRegistered(testVendorThingId, function(error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       should.exist(result);
       //TODO verify result structure
@@ -250,6 +252,8 @@ describe('tests', function () {
   });
   it('should allow thing authentication', function (done) {
     thingNode.authenticateAsThing(testVendorThingId, testThingPassword, function (error, context) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       should.exist(context);
       var authThing = context.getAuthenticatedThing();
@@ -269,6 +273,8 @@ describe('tests', function () {
   });
   it('should allow thing self loading by vendor id', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -278,6 +284,8 @@ describe('tests', function () {
   });
   it('should allow thing registration or loading', function (done) {
     thingNode.registerOrLoadThing(testRegistrationThingFields, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -293,6 +301,8 @@ describe('tests', function () {
         assert(true, 'Owner already exists');
         done();
       } else {
+        if(error)
+          console.log(error);
         should.not.exist(error);
         should.exist(result);
         done();
@@ -303,6 +313,8 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -317,10 +329,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.listThingOwners(thing, function(error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(JSON.stringify(result2).indexOf(currentUser.getID()) > -1, 'user is in the list of owners');
@@ -330,6 +346,8 @@ describe('tests', function () {
   });
   it('should allow thing loading by vendor id with current user authorization', function (done) {
     thingNode.loadThingWithVendorThingIdByCurrentUser(testVendorThingId, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -339,14 +357,26 @@ describe('tests', function () {
   });
   it('should allow getting thing fields', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      const fields = thingNode.getThingFields(thing);
-      should.exist(fields);
-      fields.should.have.property('_thingType');
-      fields.should.have.property('_vendor');
-      done();
+      thing.refresh({
+        success(returnedThing) {
+          const fields = thingNode.getThingFields(returnedThing);
+          should.exist(fields);
+          fields.should.have.property('_thingType');
+          fields.should.have.property('_vendor');
+          done();
+        },
+        failure(error) {
+          if(error)
+            console.log(error);
+          assert(false, error);
+          done();
+        }
+      });
     });
   });
   it('should allow setting thing fields', function (done) {
@@ -368,10 +398,14 @@ describe('tests', function () {
       _numberField5: 105
     };
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.updateThingFields(thing, thingFields, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
@@ -385,6 +419,8 @@ describe('tests', function () {
   });
   it('should not allow thing self disablement', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -401,11 +437,15 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByCurrentUser(testVendorThingId, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       assert(!thing.getDisabled(), 'thing should be enabled by default');
       thingNode.disableThing(thing, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
@@ -418,11 +458,15 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByCurrentUser(testVendorThingId, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       assert(thing.getDisabled(), 'thing should be disabled at this point');
       thingNode.enableThing(thing, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
@@ -433,10 +477,14 @@ describe('tests', function () {
   });
   it('should allow getting thing info by thing', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingInfo(testVendorThingId, thing.getAccessToken(), function(error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('_thingID');
@@ -451,6 +499,8 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.getThingInfo(testVendorThingId, currentUser.getAccessToken(), function(error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       should.exist(result);
       result.should.have.property('_thingID');
@@ -464,6 +514,8 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -483,14 +535,20 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByCurrentUser(testVendorThingId, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.unregisterOwner(thing, currentUser, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
         thingNode.isThingOwner(thing, currentUser, function(error3, result3) {
+          if(error3)
+            console.log(error3);
           should.not.exist(error3)
           should.exist(result3);
           done();
@@ -502,10 +560,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.registerOwnerRequestPin(thing, currentUser, false, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('code');
@@ -516,11 +578,15 @@ describe('tests', function () {
   });
   it('should allow thing owner validation by thing by verifying pin (pin code validation flow)', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       should.exist(tempPin);
       thingNode.registerOwnerValidatePin(thing, tempPin, false, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         done();
@@ -531,23 +597,31 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByCurrentUser(testVendorThingId, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.unregisterOwner(thing, currentUser, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
         // now the test
-        thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
-          should.not.exist(error);
-          let thing = result;
+        thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error3, result3) {
+          if(error3)
+            console.log(error3);
+          should.not.exist(error3);
+          let thing = result3;
           should.exist(thing);
-          thingNode.registerOwnerRequestPin(thing, currentUser, true, function (error2, result2) {
-            should.not.exist(error2);
-            should.exist(result2);
-            result2.should.have.property('code');
-            tempPin = result2.code;
+          thingNode.registerOwnerRequestPin(thing, currentUser, true, function (error4, result4) {
+            if(error4)
+              console.log(error4);
+            should.not.exist(error4);
+            should.exist(result4);
+            result4.should.have.property('code');
+            tempPin = result4.code;
             done();
           });
         });
@@ -556,11 +630,15 @@ describe('tests', function () {
   });
   it('should allow thing owner validation by owner by verifying pin (pin code validation flow)', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       should.exist(tempPin);
       thingNode.registerOwnerValidatePin(thing, tempPin, true, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         done();
@@ -569,10 +647,14 @@ describe('tests', function () {
   });
   it('should allow to create a push installation by thing', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.installThingPush(thing.getAccessToken(), false, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('installationID');
@@ -584,11 +666,15 @@ describe('tests', function () {
   });
   it('should allow to get a push installation by thing', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       should.exist(tempInstallationId);
       thingNode.getThingPush(thing.getAccessToken(), tempInstallationId, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('installationID');
@@ -599,11 +685,15 @@ describe('tests', function () {
   });
   it('should allow to get the MQTT endpoint of a push installation by thing', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       should.exist(tempInstallationId);
       thingNode.getMQTTEndpoint(thing.getAccessToken(), tempInstallationId, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('installationID');
@@ -613,11 +703,15 @@ describe('tests', function () {
   });
   it('should allow thing to connect to an MQTT endpoint', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       should.exist(tempInstallationId);
       thingNode.getMQTTEndpoint(thing.getAccessToken(), tempInstallationId, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('installationID');
@@ -661,11 +755,15 @@ describe('tests', function () {
   });
   it('should allow to delete a push installation by thing', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       should.exist(tempInstallationId);
       thingNode.deleteThingPush(thing.getAccessToken(), tempInstallationId, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         done();
@@ -674,10 +772,14 @@ describe('tests', function () {
   });
   it('should allow thing onboarding itself', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.onboardMyself(thing, testThingPassword, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('accessToken');
@@ -689,10 +791,14 @@ describe('tests', function () {
   });
   it('should allow thing to do self onboarding with vendor id', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.onboardWithVendorThingIdByThing(testVendorThingId, testThingPassword, testRegistrationThingFields._thingType, {}, 'STANDALONE', thing.getAccessToken(), function (error2, result2) {
+      thingNode.onboardWithVendorThingIdByThing(testVendorThingId, testThingPassword, testRegistrationThingFields._thingType, {}, '1_MINUTE', 'STANDALONE', thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('accessToken');
@@ -704,10 +810,14 @@ describe('tests', function () {
   });
   it('should allow thing to do self onboarding with thing id', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.onboardWithThingIdByThing(thing.getThingID(), testThingPassword, testRegistrationThingFields._thingType, {}, 'GATEWAY', thing.getAccessToken(), function (error2, result2) {
+      thingNode.onboardWithThingIdByThing(thing.getThingID(), testThingPassword, testRegistrationThingFields._thingType, {}, '1_MINUTE', 'GATEWAY', thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('accessToken');
@@ -719,12 +829,14 @@ describe('tests', function () {
   });
   it('should not allow thing onboard an end node over itself without owner', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       let endNodeVendorThingId = 'endnode_' + testVendorThingId;
       let endNodePassword = 'endnode_' + testThingPassword;
-      thingNode.onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, '', thing.getAccessToken(), function (error2, result2) {
+      thingNode.onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, '', '1_MINUTE', thing.getAccessToken(), function (error2, result2) {
         should.exist(error2);
         should.not.exist(result2);
         done();
@@ -732,11 +844,14 @@ describe('tests', function () {
         result2.should.have.property('thingID');
         result2.should.have.property('mqttEndpoint');
         thingNode.loadThingWithVendorThingId(endNodeVendorThingId, endNodePassword, function (error3, result3) {
+          if(error3)
+            console.log(error3);
           should.not.exist(error3);
           should.exist(result3);
           let thing2 = result3;
           thingNode.deleteThing(thing2, function (error4, result4) {
-            if(error4) console.log(error4);
+            if(error4)
+              console.log(error4);
             should.not.exist(error4);
             should.exist(result4);
             done();
@@ -748,10 +863,14 @@ describe('tests', function () {
   it('should have connected (thing)', function (done) {
     //Important: this test can fail because the online status is not reflected instantly after the MQTT connection
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingInfo(testVendorThingId, thing.getAccessToken(), function(error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('_online');
@@ -762,10 +881,14 @@ describe('tests', function () {
   });
   it('should allow thing self deletion', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.deleteThing(thing, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
@@ -781,7 +904,9 @@ describe('tests', function () {
   it('should allow user to do thing onboarding by vendor id', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
-    thingNode.onboardWithVendorThingIdByUser(testVendorThingId, testThingPassword, currentUser, '', {}, function (error, result) {
+    thingNode.onboardWithVendorThingIdByUser(testVendorThingId, testThingPassword, currentUser, '', {}, '', '1_MINUTE', 'STANDALONE', function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       should.exist(result);
       result.should.have.property('accessToken');
@@ -794,25 +919,33 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.onboardWithThingIdByUser(thing.getThingID(), testThingPassword, currentUser, '', {}, function (error, result) {
-        should.not.exist(error);
-        should.exist(result);
-        result.should.have.property('accessToken');
-        result.should.have.property('thingID');
-        result.should.have.property('mqttEndPoint');
+      thingNode.onboardWithThingIdByUser(thing.getThingID(), testThingPassword, currentUser, '1_MINUTE', 'STANDALONE', function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('accessToken');
+        result2.should.have.property('thingID');
+        result2.should.have.property('mqttEndPoint');
         done();
       });
     });
   });
   it('should allow thing to register thing state', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.registerThingState(thing.getThingID(), testThingState, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'thing state registered');
@@ -822,10 +955,14 @@ describe('tests', function () {
   });
   it('should allow thing to get thing state', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getLatestThingState(thing.getThingID(), thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('power');
@@ -841,10 +978,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.registerThingState(thing.getThingID(), testThingState, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'thing state registered');
@@ -856,10 +997,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getLatestThingState(thing.getThingID(), currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('power');
@@ -875,11 +1020,15 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       testThingCommand.issuer = 'user:' + currentUser.getID();
       thingNode.sendThingCommand(thing.getThingID(), testThingCommand, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('commandID');
@@ -891,11 +1040,15 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       testThingCommand.issuer = 'user:' + currentUser.getID();
       thingNode.sendThingCommand(thing.getThingID(), testThingCommand, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('commandID');
@@ -909,6 +1062,8 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -921,6 +1076,8 @@ describe('tests', function () {
         thing.getThingID(),
         thing.getAccessToken(),
         function (error2, result2) {
+          if(error2)
+            console.log(error2);
           should.not.exist(error2);
           should.exist(result2);
           result2.should.have.property('commandID');
@@ -933,10 +1090,14 @@ describe('tests', function () {
   });
   it('should allow thing to send thing command result', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.sendThingCommandResult(thing.getThingID(), testThingCommandResult, tempCommandId, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'successfully sent command result');
@@ -946,10 +1107,14 @@ describe('tests', function () {
   });
   it('should allow thing to get thing command with result', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingCommandWithResult(thing.getThingID(), tempCommandId, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('commandID');
@@ -965,10 +1130,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingCommandWithResult(thing.getThingID(), tempCommandId, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('commandID');
@@ -984,10 +1153,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingCommandsWithResults(thing.getThingID(), null, null, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('commands');
@@ -1001,10 +1174,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingCommandsWithResults(thing.getThingID(), null, null, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('commands');
@@ -1014,86 +1191,19 @@ describe('tests', function () {
       });
     });
   });
-  it('should allow thing to register scheduled trigger', function (done) {
-    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
-    should.exist(currentUser);
-    thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
-      should.not.exist(error);
-      let thing = result;
-      should.exist(thing);
-      testThingScheduledTrigger.command.issuer = 'user:' + currentUser.getID();
-      thingNode.registerThingTrigger(thing.getThingID(), testThingScheduledTrigger, thing.getAccessToken(), function (error2, result2) {
-        // You need to write to support@kii.com and ask scheduled triggers to be enabled in your app
-        should.not.exist(error2);
-        should.exist(result2);
-        result2.should.have.property('triggerID');
-        done();
-      });
-    });
-  });
-  it('should allow thing to register condition trigger', function (done) {
+  it('should not allow thing to register server code trigger', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
-      should.not.exist(error);
-      let thing = result;
-      should.exist(thing);
-      testThingConditionTrigger.command.issuer = 'user:' + currentUser.getID();
-      thingNode.registerThingTrigger(thing.getThingID(), testThingConditionTrigger, thing.getAccessToken(), function (error2, result2) {
-        should.not.exist(error2);
-        should.exist(result2);
-        result2.should.have.property('triggerID');
-        done();
-      });
-    });
-  });
-  it('should allow owner to register scheduled trigger', function (done) {
-    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
-    should.exist(currentUser);
-    thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
-      should.not.exist(error);
-      let thing = result;
-      should.exist(thing);
-      testThingScheduledTrigger.command.issuer = 'user:' + currentUser.getID();
-      thingNode.registerThingTrigger(thing.getThingID(), testThingScheduledTrigger, currentUser.getAccessToken(), function (error2, result2) {
-        // You need to write to support@kii.com and ask scheduled triggers to be enabled in your app
-        should.not.exist(error2);
-        should.exist(result2);
-        result2.should.have.property('triggerID');
-        done();
-      });
-    });
-  });
-  it('should allow owner to register condition trigger', function (done) {
-    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
-    should.exist(currentUser);
-    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
-      should.not.exist(error);
-      let thing = result;
-      should.exist(thing);
-      testThingConditionTrigger.command.issuer = 'user:' + currentUser.getID();
-      thingNode.registerThingTrigger(thing.getThingID(), testThingConditionTrigger, currentUser.getAccessToken(), function (error2, result2) {
-        should.not.exist(error2);
-        should.exist(result2);
-        result2.should.have.property('triggerID');
-        done();
-      });
-    });
-  });
-  it('should allow thing to register server code trigger', function (done) {
-    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
-    should.exist(currentUser);
-    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       testThingServerCodeTrigger.serverCode.executorAccessToken = thing.getAccessToken();
       thingNode.registerThingTrigger(thing.getThingID(), testThingServerCodeTrigger, thing.getAccessToken(), function (error2, result2) {
-        should.not.exist(error2);
-        should.exist(result2);
-        result2.should.have.property('triggerID');
-        tempTriggerId = result2['triggerID'];
-        should.exist(tempTriggerId);
+        should.exist(error2);
+        should.not.exist(result2);
         done();
       });
     });
@@ -1102,11 +1212,17 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       testThingServerCodeTrigger.serverCode.executorAccessToken = currentUser.getAccessToken();
       thingNode.registerThingTrigger(thing.getThingID(), testThingServerCodeTrigger, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        if(error2)
+          tempTriggerId2 = 1;
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('triggerID');
@@ -1116,14 +1232,129 @@ describe('tests', function () {
       });
     });
   });
+  it('should not allow thing to register scheduled trigger', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      testThingScheduledTrigger.command.issuer = 'user:' + currentUser.getID();
+      thingNode.registerThingTrigger(thing.getThingID(), testThingScheduledTrigger, thing.getAccessToken(), function (error2, result2) {
+        // You need to write to support@kii.com and ask scheduled triggers to be enabled in your app
+        should.exist(error2);
+        should.not.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should allow owner to register scheduled trigger', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      testThingScheduledTrigger.command.issuer = 'user:' + currentUser.getID();
+      thingNode.registerThingTrigger(thing.getThingID(), testThingScheduledTrigger, currentUser.getAccessToken(), function (error2, result2) {
+        // You need to write to support@kii.com and ask scheduled triggers to be enabled in your app
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('triggerID');
+        done();
+      });
+    });
+  });
+  it('should not allow thing to register command/condition trigger', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      testThingConditionTrigger.command.issuer = 'user:' + currentUser.getID();
+      thingNode.registerThingTrigger(thing.getThingID(), testThingConditionTrigger, thing.getAccessToken(), function (error2, result2) {
+        should.exist(error2);
+        should.not.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should allow owner to register command/condition trigger', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      testThingConditionTrigger.command.issuer = 'user:' + currentUser.getID();
+      thingNode.registerThingTrigger(thing.getThingID(), testThingConditionTrigger, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        if(error2)
+          tempTriggerId = 1;
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('triggerID');
+        tempTriggerId = result2['triggerID'];
+        should.exist(tempTriggerId);
+        done();
+      });
+    });
+  });
   it('should allow owner to get trigger server code execution result', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
+      while(!tempTriggerId);
+      if(tempTriggerId == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
       thingNode.getThingTriggerServerCodeResult(thing.getThingID(), null, null, tempTriggerId, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('triggerServerCodeResults');
+        done();
+      });
+    });
+  });
+  it('should allow thing to get trigger server code execution result', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    should.exist(currentUser);
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      while(!tempTriggerId2);
+      if(tempTriggerId2 == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.getThingTriggerServerCodeResult(thing.getThingID(), null, null, tempTriggerId2, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('triggerServerCodeResults');
@@ -1133,10 +1364,20 @@ describe('tests', function () {
   });
   it('should allow thing to disable trigger', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId, false, thing.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId2);
+      if(tempTriggerId2 == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId2, false, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger disabled');
@@ -1148,10 +1389,20 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId2, false, currentUser.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId);
+      if(tempTriggerId == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId, false, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger disabled');
@@ -1161,10 +1412,20 @@ describe('tests', function () {
   });
   it('should allow thing to enable trigger', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId, true, thing.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId2);
+      if(tempTriggerId2 == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId2, true, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger disabled');
@@ -1176,10 +1437,20 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId2, true, currentUser.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId);
+      if(tempTriggerId == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.enableOrDisableThingTrigger(thing.getThingID(), tempTriggerId, true, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger disabled');
@@ -1187,16 +1458,25 @@ describe('tests', function () {
       });
     });
   });
-  it('should allow thing to update trigger', function (done) {
+  it('should not allow thing to update trigger', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       testThingUpdatedTrigger.serverCode.executorAccessToken = thing.getAccessToken();
-      thingNode.updateThingTrigger(thing.getThingID(), tempTriggerId, testThingUpdatedTrigger, thing.getAccessToken(), function (error2, result2) {
-        should.not.exist(error2);
-        should.exist(result2);
-        assert(result2, 'trigger updated');
+      while(!tempTriggerId2);
+      if(tempTriggerId2 == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.updateThingTrigger(thing.getThingID(), tempTriggerId2, testThingUpdatedTrigger, thing.getAccessToken(), function (error2, result2) {
+        if(result2)
+          console.log(result2);
+        should.exist(error2);
+        should.not.exist(result2);
         done();
       });
     });
@@ -1205,11 +1485,21 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       testThingUpdatedTrigger.serverCode.executorAccessToken = currentUser.getAccessToken();
-      thingNode.updateThingTrigger(thing.getThingID(), tempTriggerId2, testThingUpdatedTrigger, currentUser.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId);
+      if(tempTriggerId == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.updateThingTrigger(thing.getThingID(), tempTriggerId, testThingUpdatedTrigger, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger updated');
@@ -1219,10 +1509,20 @@ describe('tests', function () {
   });
   it('should allow thing to get trigger', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.getThingTrigger(thing.getThingID(), tempTriggerId, thing.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId2);
+      if(tempTriggerId2 == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.getThingTrigger(thing.getThingID(), tempTriggerId2, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('triggerID');
@@ -1234,10 +1534,20 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.getThingTrigger(thing.getThingID(), tempTriggerId2, currentUser.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId);
+      if(tempTriggerId == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.getThingTrigger(thing.getThingID(), tempTriggerId, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('triggerID');
@@ -1247,10 +1557,14 @@ describe('tests', function () {
   });
   it('should allow thing to get triggers', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingTriggers(thing.getThingID(), null, null, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('triggers');
@@ -1262,10 +1576,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getThingTriggers(thing.getThingID(), null, null, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         result2.should.have.property('triggers');
@@ -1275,10 +1593,20 @@ describe('tests', function () {
   });
   it('should allow thing to delete trigger', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.deleteThingTrigger(thing.getThingID(), tempTriggerId, thing.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId2);
+      if(tempTriggerId2 == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.deleteThingTrigger(thing.getThingID(), tempTriggerId2, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger deleted');
@@ -1290,10 +1618,20 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.deleteThingTrigger(thing.getThingID(), tempTriggerId2, currentUser.getAccessToken(), function (error2, result2) {
+      while(!tempTriggerId);
+      if(tempTriggerId == 1) {
+        assert(false, "trigger id from previous test is missing");
+        done();
+      }
+      else
+      thingNode.deleteThingTrigger(thing.getThingID(), tempTriggerId, currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'trigger deleted');
@@ -1305,10 +1643,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getVendorThingId(thing.getThingID(), currentUser.getAccessToken(), function (error2, vendorThingId) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(vendorThingId);
         vendorThingId.should.equal(testVendorThingId);
@@ -1318,10 +1660,14 @@ describe('tests', function () {
   });
   it('should allow thing to get the vendor thing id of itself', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.getVendorThingId(thing.getThingID(), thing.getAccessToken(), function (error2, vendorThingId) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(vendorThingId);
         vendorThingId.should.equal(testVendorThingId);
@@ -1331,6 +1677,8 @@ describe('tests', function () {
   });
   it('should not allow thing to configure itself as gateway', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
@@ -1345,10 +1693,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.setThingAsGateway(thing.getThingID(), currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'Thing registered as gateway');
@@ -1360,14 +1712,20 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.updateVendorThingId(thing.getThingID(), 'newMyDevice' , 'newMyDevicePassword', currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'thing info updated');
         thingNode.updateVendorThingId(thing.getThingID(), testVendorThingId , testThingPassword, currentUser.getAccessToken(), function (error3, result3) {
+          if(error3)
+            console.log(error3);
           should.not.exist(error3);
           should.exist(result3);
           assert(result3, 'thing info updated');
@@ -1378,15 +1736,20 @@ describe('tests', function () {
   });
   it('should allow thing to change vendor thing id and password of itself', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.updateVendorThingId(thing.getThingID(), 'newMyDevice' , 'newMyDevicePassword', thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
         assert(result2, 'thing info updated');
         thingNode.updateVendorThingId(thing.getThingID(), testVendorThingId , testThingPassword, thing.getAccessToken(), function (error3, result3) {
-          should.not.exist(error3);
+          if(error3)
+            console.log(error3)
           should.exist(result3);
           assert(result3, 'thing info updated');
           done();
@@ -1398,10 +1761,14 @@ describe('tests', function () {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
     thingNode.loadThingWithVendorThingIdByOwner(testVendorThingId, currentUser, function (error, result) {
+      if(error)
+        console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
       thingNode.deleteThing(thing, function (error2, result2) {
+        if(error2)
+          console.log(error2);
         should.not.exist(error2);
         let thing2 = result2;
         should.exist(thing2);
