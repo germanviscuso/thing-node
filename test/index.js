@@ -11,9 +11,10 @@ const testRegistrationThingFields = {
   _vendorThingID: testVendorThingId,
   _password: testThingPassword,
   _thingType: 'sensor',
-  _vendor: 'Kii'
+  _vendor: 'Kii',
+  _layoutPosition: 'STANDALONE'
 };
-const testUsername = 'testuser';
+const testUsername = 'testuser' + random;
 const testUserPassword = '123456';
 const testThingState = {
   'power': true,
@@ -827,7 +828,7 @@ describe('tests', function () {
       });
     });
   });
-  it('should not allow thing onboard an end node over itself without owner', function (done) {
+  it('should not allow thing gateway to onboard an end node over itself without owner', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
       if(error)
         console.log(error);
@@ -836,13 +837,103 @@ describe('tests', function () {
       should.exist(thing);
       let endNodeVendorThingId = 'endnode_' + testVendorThingId;
       let endNodePassword = 'endnode_' + testThingPassword;
-      thingNode.onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, '', '1_MINUTE', thing.getAccessToken(), function (error2, result2) {
+      thingNode.onboardEndNodeWithGatewayVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, '', '1_MINUTE', thing.getAccessToken(), function (error2, result2) {
+        if(result2)
+          console.log(result2);
         should.exist(error2);
         should.not.exist(result2);
         done();
-        /*result2.should.have.property('accessToken');
-        result2.should.have.property('thingID');
-        result2.should.have.property('mqttEndpoint');
+      });
+    });
+  });
+  it('should not allow thing gateway to onboard an end node over itself with owner', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      let endNodeVendorThingId = 'endnode_' + testVendorThingId;
+      let endNodePassword = 'endnode_' + testThingPassword;
+      thingNode.onboardEndNodeWithGatewayVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, currentUser.getID(), '1_MINUTE', thing.getAccessToken(), function (error2, result2) {
+        if(result2)
+          console.log(result2);
+        should.exist(error2);
+        should.not.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should not allow owner to onboard an end node over a standalone thing with vendor thing id', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      let endNodeVendorThingId = 'endnode_' + testVendorThingId;
+      let endNodePassword = 'endnode_' + testThingPassword;
+      thingNode.onboardEndNodeWithGatewayVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, currentUser.getID(), '1_MINUTE', currentUser.getAccessToken(), function (error2, result2) {
+        if(result2)
+          console.log(result2);
+        should.exist(error2);
+        should.not.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should allow owner to set standalone thing as gateway', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.setThingAsGateway(thing.getThingID(), currentUser.getAccessToken(), function(error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should allow thing to set itself as gateway', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.setThingAsGateway(thing.getThingID(), thing.getAccessToken(), function(error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        done();
+      });
+    });
+  });
+  it('should allow owner to onboard an end node over a thing gateway with vendor thing id', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      let endNodeVendorThingId = 'endnode_' + testVendorThingId;
+      let endNodePassword = 'endnode_' + testThingPassword;
+      thingNode.onboardEndNodeWithGatewayVendorThingId(endNodeVendorThingId, endNodePassword, testVendorThingId, {}, testRegistrationThingFields._thingType, currentUser.getID(), '1_MINUTE', currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('accessToken');
+        result2.should.have.property('endNodeThingID');
         thingNode.loadThingWithVendorThingId(endNodeVendorThingId, endNodePassword, function (error3, result3) {
           if(error3)
             console.log(error3);
@@ -856,7 +947,41 @@ describe('tests', function () {
             should.exist(result4);
             done();
           });
-        });*/
+        });
+      });
+    });
+  });
+  it('should allow owner to onboard an end node over a thing gateway with thing id', function (done) {
+    let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      let endNodeVendorThingId = 'endnode_' + testVendorThingId;
+      let endNodePassword = 'endnode_' + testThingPassword;
+      thingNode.onboardEndNodeWithGatewayThingId(endNodeVendorThingId, endNodePassword, thing.getThingID(), {}, testRegistrationThingFields._thingType, currentUser.getID(), '1_MINUTE', currentUser.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('accessToken');
+        result2.should.have.property('endNodeThingID');
+        thingNode.loadThingWithVendorThingId(endNodeVendorThingId, endNodePassword, function (error3, result3) {
+          if(error3)
+            console.log(error3);
+          should.not.exist(error3);
+          should.exist(result3);
+          let thing2 = result3;
+          thingNode.deleteThing(thing2, function (error4, result4) {
+            if(error4)
+              console.log(error4);
+            should.not.exist(error4);
+            should.exist(result4);
+            done();
+          });
+        });
       });
     });
   });
@@ -1780,6 +1905,23 @@ describe('tests', function () {
         });
       });
     });
+  });
+  it('should allow user deletion', function (done) {
+    var user = thingNode.getKiiInstance().KiiUser.getCurrentUser();
+    user.delete().then(
+      function(theUser) {
+        assert(true, 'user deleted');
+        done();
+      }
+    ).catch(
+      function(error) {
+        if(error)
+          console.log(error);
+        var theUser = error.target;
+        var errorString = error.message;
+        assert(false, 'could not delete user');
+      }
+    );
   });
 });
 

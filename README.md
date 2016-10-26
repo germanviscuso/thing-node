@@ -1,4 +1,4 @@
-# thing-node [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+# thing-node [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency status][david-dm-image]][david-dm-url] [![Downloads][downloads-image]][npm-url]
 A Kii enabled IoT library for node.js capable Things
 
 ## Installation
@@ -81,9 +81,10 @@ node ../kii-cli/bin/kii-logs.js -t --site us --app-id <KII_APP_ID> --app-key <KI
 
 MIT © [German Viscuso](https://github.com/germanviscuso)
 
-[npm-image]: https://badge.fury.io/js/thing-node.svg
 [npm-url]: https://npmjs.org/package/thing-node
-[travis-image]: https://travis-ci.org/germanviscuso/thing-node.svg?branch=master
+[downloads-image]: http://img.shields.io/npm/dm/thing-node.svg
+[npm-image]: http://img.shields.io/npm/v/thing-node.svg
 [travis-url]: https://travis-ci.org/germanviscuso/thing-node
-[daviddm-image]: https://david-dm.org/germanviscuso/thing-node.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/germanviscuso/thing-node
+[travis-image]: http://img.shields.io/travis/germanviscuso/thing-node.svg
+[david-dm-url]:https://david-dm.org/germanviscuso/thing-node
+[david-dm-image]:https://david-dm.org/germanviscuso/thing-node.svg

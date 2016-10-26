@@ -1,6 +1,6 @@
 {
   "name": "thing-node",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A Kii enabled IoT library for node.js capable Things",
   "homepage": "https://github.com/germanviscuso/thing-node",
   "author": {
@@ -42,11 +42,11 @@
     "mocha": "^2.5.3"
   },
   "dependencies": {
-    "kii-cloud-sdk": "^2.4.6",
-    "thing-if-sdk": "^0.1.0",
+    "kii-cloud-sdk": "^2.4.8",
+    "thing-if-sdk": "^0.2.5",
     "jquery-xhr": "^2.1.3",
     "request": "^2.72.0",
-    "mqtt": "^1.10.0"
+    "mqtt": "^2.0.1"
   },
   "eslintConfig": {
     "extends": "xo-space",
