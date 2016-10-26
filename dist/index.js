@@ -130,6 +130,9 @@ module.exports = {
       _password: '123ABC',
       _thingType: 'sensor',
       _vendor: 'Kii'
+      _productName: 'Meshlium',
+      _lot: 12345,
+      _layoutPosition: 'STANDALONE'
     };
     */
     _kii.KiiThing.register(thingFields, {
@@ -742,16 +745,18 @@ module.exports = {
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
 
+    var body = {
+      vendorThingID: vendorThingId,
+      thingPassword: thingPassword,
+      thingType: thingType,
+      thingProperties: thingProperties,
+      layoutPosition: layoutPosition,
+      dataGroupingInterval: dataGroupingInterval
+    };
+
     var options = {
       url: url,
-      body: {
-        vendorThingID: vendorThingId,
-        thingPassword: thingPassword,
-        thingType: thingType,
-        thingProperties: thingProperties,
-        layoutPosition: layoutPosition,
-        dataGroupingInterval: dataGroupingInterval
-      },
+      body: body,
       json: true,
       method: 'post',
       headers: {
@@ -780,16 +785,100 @@ module.exports = {
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
 
+    var body = {
+      thingID: thingId,
+      thingPassword: thingPassword,
+      thingType: thingType,
+      thingProperties: thingProperties,
+      layoutPosition: layoutPosition,
+      dataGroupingInterval: dataGroupingInterval
+    };
+
     var options = {
       url: url,
-      body: {
-        thingID: thingId,
-        thingPassword: thingPassword,
-        thingType: thingType,
-        thingProperties: thingProperties,
-        layoutPosition: layoutPosition,
-        dataGroupingInterval: dataGroupingInterval
-      },
+      body: body,
+      json: true,
+      method: 'post',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': contentType,
+        'Accept': '*/*'
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) callback(error, null);else switch (response.statusCode) {
+        case 200:
+          callback(null, response.body);
+          break;
+        default:
+          callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
+  onboardWithThingIdByOwner: function onboardWithThingIdByOwner(thingId, thingPassword, thingType, thingProperties, userId, dataGroupingInterval, layoutPosition, accessToken, callback) {
+    var contentType = 'application/vnd.kii.OnboardingWithThingIDByOwner+json';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
+
+    var body = {
+      thingID: thingId,
+      thingPassword: thingPassword
+    };
+    if (thingProperties) body.thingProperties = thingProperties;
+    if (thingType) body.thingType = thingType;
+    if (userId) body.owner = 'USER:' + userId;
+    if (layoutPosition) body.layoutPosition = layoutPosition;
+    if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
+
+    var options = {
+      url: url,
+      body: body,
+      json: true,
+      method: 'post',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': contentType,
+        'Accept': '*/*'
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) callback(error, null);else switch (response.statusCode) {
+        case 200:
+          callback(null, response.body);
+          break;
+        default:
+          callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
+  onboardWithVendorThingIdByOwner: function onboardWithVendorThingIdByOwner(vendorThingId, thingPassword, thingType, thingProperties, userId, dataGroupingInterval, layoutPosition, accessToken, callback) {
+    var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByOwner+json';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
+
+    var body = {
+      vendorThingID: vendorThingId,
+      thingPassword: thingPassword
+    };
+    if (thingProperties) body.thingProperties = thingProperties;
+    if (thingType) body.thingType = thingType;
+    if (userId) body.owner = 'USER:' + userId;
+    if (layoutPosition) body.layoutPosition = layoutPosition;
+    if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
+
+    var options = {
+      url: url,
+      body: body,
       json: true,
       method: 'post',
       headers: {
@@ -816,19 +905,61 @@ module.exports = {
   onboardMyself: function onboardMyself(thing, thingPassword, callback) {
     this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, '1_MINUTE', 'STANDALONE', thing.getAccessToken(), callback);
   },
-  onboardEndNodeWithVendorThingId: function onboardEndNodeWithVendorThingId(endNodeVendorThingId, endNodePassword, gatewayVendorThingId, endNodeThingProperties, endNodeThingType, owner, dataGroupingInterval, accessToken, callback) {
+  onboardEndNodeWithGatewayVendorThingId: function onboardEndNodeWithGatewayVendorThingId(endNodeVendorThingId, endNodePassword, gatewayVendorThingId, endNodeThingProperties, endNodeThingType, userId, dataGroupingInterval, accessToken, callback) {
     var contentType = 'application/vnd.kii.OnboardingEndNodeWithGatewayVendorThingID+json';
     var baseUrl = thingifApp.getThingIFBaseUrl();
     var url = baseUrl + '/onboardings';
+
     var body = {
       endNodeVendorThingID: endNodeVendorThingId,
-      endNodePassword: endNodePassword,
-      gatewayVendorThingID: gatewayVendorThingId,
-      dataGroupingInterval: dataGroupingInterval
+      endNodePassword: endNodePassword
     };
     if (endNodeThingProperties) body.endNodeThingProperties = endNodeThingProperties;
     if (endNodeThingType) body.endNodeThingType = endNodeThingType;
-    if (owner) body.owner = owner;
+    if (userId) body.owner = 'USER:' + userId;
+    if (gatewayVendorThingId) body.gatewayVendorThingID = gatewayVendorThingId;
+    if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
+
+    var options = {
+      url: url,
+      body: body,
+      json: true,
+      method: 'post',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': contentType,
+        'Accept': '*/*'
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) callback(error, null);else switch (response.statusCode) {
+        case 200:
+          callback(null, response.body);
+          break;
+        default:
+          callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
+  onboardEndNodeWithGatewayThingId: function onboardEndNodeWithGatewayThingId(endNodeVendorThingId, endNodePassword, gatewayThingId, endNodeThingProperties, endNodeThingType, userId, dataGroupingInterval, accessToken, callback) {
+    var contentType = 'application/vnd.kii.OnboardingEndNodeWithGatewayThingID+json';
+    var baseUrl = thingifApp.getThingIFBaseUrl();
+    var url = baseUrl + '/onboardings';
+
+    var body = {
+      endNodeVendorThingID: endNodeVendorThingId,
+      endNodePassword: endNodePassword
+    };
+    if (endNodeThingProperties) body.endNodeThingProperties = endNodeThingProperties;
+    if (endNodeThingType) body.endNodeThingType = endNodeThingType;
+    if (userId) body.owner = 'USER:' + userId;
+    if (gatewayThingId) body.gatewayThingID = gatewayThingId;
+    if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
 
     var options = {
       url: url,

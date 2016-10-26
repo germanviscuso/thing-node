@@ -65,10 +65,6 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, thing) {
 - Npm dev version:  ```3.5.2```
 - Node deploy version: ```0.12.14```
 - Npm deploy version: ```2.15.1```
-- Continuous integration: ```Travis```
-- Test deploy platform: ```Raspberry Pi Zero```
-- Kii JS SDK: ```2.4.7```
-- Thing-IF JS SDK: ```1.0```
 
 ## Logging
 
