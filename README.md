@@ -63,7 +63,7 @@ thingNode.registerOrLoadThing(thingRegistrationFields, function (error, thing) {
 - Test: ```npm test``` or ```gulp```
 - Node dev version: ```4.2.1```
 - Npm dev version:  ```3.5.2```
-- Node deploy version: ```0.12.14```
+- Node deploy version: ```0.12.17```
 - Npm deploy version: ```2.15.1```
 
 ## Logging

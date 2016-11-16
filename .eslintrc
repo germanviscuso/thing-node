@@ -10,5 +10,9 @@
     "spaced-comment": 0,
     "prefer-template": 0,
     "max-nested-callbacks": 0
+  },
+  "extends": "xo-space",
+  "env": {
+    "mocha": true
   }
 }
