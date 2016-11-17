@@ -20,7 +20,7 @@ console.log('Kii JS SDK v' + _kii.Kii.getSDKVersion());
 console.log('Kii JS Thing-IF SDK v' + _thingif.getSDKVersion());
 
 // patch until issue 604 is fixed
-//_kii.KiiThingWithToken.prototype.getAccessToken = function () { if (this._accessToken) return this._accessToken; else return this._adminToken; };
+// _kii.KiiThingWithToken.prototype.getAccessToken = function () { if (this._accessToken) return this._accessToken; else return this._adminToken; };
 
 module.exports = {
 
@@ -137,10 +137,10 @@ module.exports = {
     */
     _kii.KiiThing.register(thingFields, {
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
@@ -152,13 +152,13 @@ module.exports = {
           var vendorThingId = thingFields._vendorThingID;
           var thingPassword = thingFields._password;
           context.loadThingWithVendorThingId(vendorThingId, thingPassword, function (error, result) {
-            if (error) callback(error, null);else callback(null, result);
+            if (error) return callback(error, null);else return callback(null, result);
           });
         } else {
-          callback(error, null);
+          return callback(error, null);
         }
       } else {
-        callback(null, result);
+        return callback(null, result);
       }
     });
   },
@@ -185,10 +185,10 @@ module.exports = {
     thing.fields = thingFields;
     thing.update({
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
@@ -216,10 +216,10 @@ module.exports = {
     thing.fields[key] = value;
     thing.update({
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
@@ -234,8 +234,8 @@ module.exports = {
   },
   loadThingWithVendorThingId: function loadThingWithVendorThingId(vendorThingId, password, callback) {
     this.authenticateAsThing(vendorThingId, password, function (error, context) {
-      if (error) callback(error, null);else {
-        callback(null, context.getAuthenticatedThing());
+      if (error) return callback(error, null);else {
+        return callback(null, context.getAuthenticatedThing());
       }
     });
   },
@@ -243,10 +243,10 @@ module.exports = {
     var token = owner.getAccessToken();
     _kii.KiiThingWithToken.loadWithThingID(thingId, {
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     }, token);
   },
@@ -254,40 +254,40 @@ module.exports = {
     var token = owner.getAccessToken();
     _kii.KiiThingWithToken.loadWithVendorThingID(vendorThingId, {
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     }, token);
   },
   loadThingWithThingIdByCurrentUser: function loadThingWithThingIdByCurrentUser(thingId, callback) {
     _kii.KiiThing.loadWithThingID(thingId, {
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
   loadThingWithVendorThingIdByCurrentUser: function loadThingWithVendorThingIdByCurrentUser(vendorThingId, callback) {
     _kii.KiiThing.loadWithVendorThingID(vendorThingId, {
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
   isThingOwner: function isThingOwner(thing, userOrGroup, callback) {
     thing.isOwner(userOrGroup, {
       success: function success(returnedThing, owner, isOwner) {
-        if (callback) callback(null, isOwner);
+        if (callback) return callback(null, isOwner);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
@@ -303,14 +303,12 @@ module.exports = {
         url += '/group:' + userOrGroup.getID();
         var currentUser = _kii.Kii.getCurrentUser();
         if (!currentUser) {
-          callback("Adding group as owner requires a Kii user to be logged in", null);
-          return;
+          return callback("Adding group as owner requires a Kii user to be logged in", null);
         } else {
           accessToken = currentUser.getAccessToken();
         }
       } else {
-        callback("Candidate owner must be a Kii user or group", null);
-        return;
+        return callback("Candidate owner must be a Kii user or group", null);
       }
     }
 
@@ -322,17 +320,17 @@ module.exports = {
         'X-Kii-AppID': _kii.Kii.getAppID(),
         'X-Kii-AppKey': _kii.Kii.getAppKey(),
         'Authorization': 'Bearer ' + accessToken,
-        "Accept": '*/*'
+        'Accept': '*/*'
       }
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -350,12 +348,10 @@ module.exports = {
         url += '/group:' + userOrGroup.getID();
         currentUser = _kii.Kii.getCurrentUser();
         if (!currentUser) {
-          callback("Adding group as owner requires a Kii user to be logged in", null);
-          return;
+          return callback("Adding group as owner requires a Kii user to be logged in", null);
         }
       } else {
-        callback("Candidate owner must be a Kii user or group", null);
-        return;
+        return callback("Candidate owner must be a Kii user or group", null);
       }
     }
 
@@ -371,17 +367,17 @@ module.exports = {
         'X-Kii-AppID': _kii.Kii.getAppID(),
         'X-Kii-AppKey': _kii.Kii.getAppKey(),
         'Authorization': 'Bearer ' + accessToken,
-        "Accept": '*/*'
+        'Accept': '*/*'
       }
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -395,8 +391,7 @@ module.exports = {
     if (!initiatedByUser) accessToken = thing.getAccessToken();else {
       currentUser = _kii.Kii.getCurrentUser();
       if (!currentUser) {
-        callback("Pin validation for adding thing owner initiated by user requires the user to be logged in", null);
-        return;
+        return callback("Pin validation for adding thing owner initiated by user requires the user to be logged in", null);
       }
       accessToken = currentUser.getAccessToken();
     }
@@ -418,12 +413,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -432,10 +427,10 @@ module.exports = {
   unregisterOwner: function unregisterOwner(thing, userOrGroup, callback) {
     thing.unregisterOwner(userOrGroup, {
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
@@ -453,12 +448,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {// no body available in this call
+      if (error) return callback(error, null);else switch (response.statusCode) {// no body available in this call
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -467,20 +462,20 @@ module.exports = {
   enableThing: function enableThing(thing, callback) {
     thing.enable({
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
   disableThing: function disableThing(thing, callback) {
     thing.disable({
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
@@ -490,20 +485,20 @@ module.exports = {
   deleteThing: function deleteThing(thing, callback) {
     thing.deleteThing({
       success: function success(returnedThing) {
-        if (callback) callback(null, returnedThing);
+        if (callback) return callback(null, returnedThing);
       },
       failure: function failure(error) {
-        if (callback) callback(error, null);
+        if (callback) return callback(error, null);
       }
     });
   },
   authenticateAsThing: function authenticateAsThing(vendorThingId, password, callback) {
     _kii.Kii.authenticateAsThing(vendorThingId, password, {
       success: function success(thingAuthContext) {
-        if (callback) callback(null, thingAuthContext);
+        if (callback) return callback(null, thingAuthContext);
       },
       failure: function failure(errorString, errorCode) {
-        if (callback) callback(errorString, null);
+        if (callback) return callback(errorString, null);
       }
     });
   },
@@ -511,18 +506,18 @@ module.exports = {
     // uses auth token from current logged in user
     var currentUser = this.getKiiInstance().Kii.getCurrentUser();
     if (!currentUser) {
-      callback('No Kii user: app user must be logged in', null);
+      return callback('No Kii user: app user must be logged in', null);
     } else {
       var _callback = function _callback(error, response) {
-        if (error) callback(error, null);else switch (response.statusCode) {// no body available in this call
+        if (error) return callback(error, null);else switch (response.statusCode) {// no body available in this call
           case 204:
-            callback(null, true);
+            return callback(null, true);
             break;
           case 404:
-            callback(null, false);
+            return callback(null, false);
             break;
           default:
-            callback(response.body, null);
+            return callback(response.body, null);
         }
       };
 
@@ -556,12 +551,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -581,7 +576,7 @@ module.exports = {
       client.publish('presence', 'Hello mqtt');
     });
      client.on('error', function () {
-      //report error
+      // report error
     });
      client.on('message', function (topic, message) {
       // message is Buffer
@@ -593,10 +588,10 @@ module.exports = {
   authenticateAsAdmin: function authenticateAsAdmin(clientId, clientSecret, callback) {
     _kii.Kii.authenticateAsAppAdmin(clientId, clientSecret, {
       success: function success(adminContext) {
-        if (callback) callback(null, adminContext);
+        if (callback) return callback(null, adminContext);
       },
       failure: function failure(errorString, errorCode) {
-        if (callback) callback(errorString, null);
+        if (callback) return callback(errorString, null);
       }
     });
   },
@@ -639,12 +634,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 201:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -664,12 +659,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -689,12 +684,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -714,13 +709,13 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
         case 503:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -769,12 +764,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -809,12 +804,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -850,12 +845,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -891,12 +886,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -935,12 +930,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -976,12 +971,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1007,13 +1002,13 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 201:
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1038,12 +1033,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1080,12 +1075,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1110,12 +1105,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1142,12 +1137,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1173,12 +1168,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 201:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1205,12 +1200,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1236,12 +1231,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1266,12 +1261,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1297,12 +1292,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1327,12 +1322,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1359,12 +1354,12 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1382,21 +1377,21 @@ module.exports = {
       json: true,
       method: 'post',
       headers: {
-        "X-Kii-AppID": _kii.Kii.getAppID(),
-        "X-Kii-AppKey": _kii.Kii.getAppKey(),
-        "Content-Type": contentType,
-        "Accept": "*/*",
-        "Authorization": "Bearer " + accessToken
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Content-Type': contentType,
+        'Accept': '*/*',
+        'Authorization': 'Bearer ' + accessToken
       }
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 201:
-          callback(null, response.body);
+          return callback(null, response.body);
           break;
         default:
-          callback(response.body, null);
+          return callback(response.body, null);
       }
     }
 
@@ -1411,17 +1406,17 @@ module.exports = {
   getVendorThingId: function getVendorThingId(thingId, accessToken, callback) {
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
     apiAuthor.getVendorThingID(thingId).then(function (vendorThingId) {
-      callback(null, vendorThingId);
+      return callback(null, vendorThingId);
     }).catch(function (err) {
-      callback(err, null);
+      return callback(err, null);
     });
   },
   updateVendorThingId: function updateVendorThingId(thingId, newVendorThingId, newPassword, accessToken, callback) {
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
     apiAuthor.updateVendorThingID(thingId, newVendorThingId, newPassword).then(function () {
-      callback(null, true);
+      return callback(null, true);
     }).catch(function (err) {
-      callback(err, null);
+      return callback(err, null);
     });
   },
   setThingAsGateway: function setThingAsGateway(thingId, accessToken, callback) {
@@ -1442,24 +1437,24 @@ module.exports = {
     };
 
     function _callback(error, response) {
-      if (error) callback(error, null);else switch (response.statusCode) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
         case 204:
-          callback(null, true);
+          return callback(null, true);
           break;
         case 400:
-          callback('Specified layoutPosition is not GATEWAY', null);
+          return callback('Specified layoutPosition is not GATEWAY', null);
           break;
         case 401:
-          callback('Failed to authenticate with the given token', null);
+          return callback('Failed to authenticate with the given token', null);
           break;
         case 404:
-          callback('Specified thing is not found', null);
+          return callback('Specified thing is not found', null);
           break;
         case 409:
-          callback('Specified Thing is registered as End Node of some Gateway', null);
+          return callback('Specified Thing is registered as End Node of some Gateway', null);
           break;
         default:
-          callback('Unknown error: ' + response.statusCode, null);
+          return callback('Unknown error: ' + response.statusCode, null);
       }
     }
 

@@ -67,7 +67,7 @@ server.on('listening', function () {
 
           mqttClient.on('connect', function () {
             mqttClient.subscribe(topic);
-            //mqttClient.publish(topic, 'Hello mqtt');
+            // mqttClient.publish(topic, 'Hello mqtt');
             console.log('MQTT client connected!');
           });
 

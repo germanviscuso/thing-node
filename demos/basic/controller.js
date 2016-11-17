@@ -62,10 +62,10 @@ console.log('Initializing thing-node...');
 thingNode.initialize(config.kii.appId, config.kii.appKey, config.kii.appSite);
 
 thingNode.getKiiInstance().KiiUser.authenticate(username, userPassword).then(
-  function(theUser) {
+  function (theUser) {
     console.log('User ID is: ' + theUser.getID());
-    //Register user as Thing owner
-    thingNode.registerOwnerSimpleFlow(vendorThingId, theUser, function(error, result) {
+    // Register user as Thing owner
+    thingNode.registerOwnerSimpleFlow(vendorThingId, theUser, function (error, result) {
       if(error && (error.errorCode != 'THING_OWNERSHIP_ALREADY_EXISTS')) {
         console.log('Error registering owner: ' + error.message);
       }
@@ -73,7 +73,7 @@ thingNode.getKiiInstance().KiiUser.authenticate(username, userPassword).then(
         console.log('Owner successfully registered!');
       else
         console.log('The user was already an owner of the thing');
-      //fetch thing token and submit command
+      // fetch thing token and submit command
       thingNode.loadThingWithVendorThingIdByOwner(vendorThingId, theUser, function (error2, result2) {
         if(error2) {
           console.log('Error loading thing: ' + error2.message);
@@ -101,15 +101,15 @@ thingNode.getKiiInstance().KiiUser.authenticate(username, userPassword).then(
     });
   }
 ).catch(
-  function(error) {
+  function (error) {
     if(error.message.indexOf('invalid_grant') > -1) {
       var userBuilder = thingNode.getKiiInstance().KiiUser.userWithUsername(username, userPassword);
       userBuilder.register().then(
-        function(theUser) {
+        function (theUser) {
           console.log('User registered. Please run this script again!');
         }
       ).catch(
-        function(error) {
+        function (error) {
           console.log('Error registering user: ' + error.message);
         }
       );

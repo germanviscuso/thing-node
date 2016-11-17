@@ -24,10 +24,10 @@ setInterval(function () {
   message = message.replace('<LAT>', (Math.random() * 1000).toString());
   message = message.replace('<LON>', (Math.random() * 1000).toString());
   var buffer = new Buffer(message);
-  client.send(buffer, 0, buffer.length, PORT, HOST, function(err, bytes) {
+  client.send(buffer, 0, buffer.length, PORT, HOST, function (err, bytes) {
     if (err) throw err;
     console.log('UDP message sent to ' + HOST +':'+ PORT);
-    //client.close();
+    // client.close();
   });
 }, 5000);
 
