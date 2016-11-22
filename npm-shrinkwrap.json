@@ -1,6 +1,6 @@
 {
   "name": "thing-node",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "dependencies": {
     "babel-core": {
       "version": "6.17.0",

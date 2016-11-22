@@ -1397,6 +1397,35 @@ module.exports = {
 
     request(options, _callback);
   },
+  executeServerExtension: function executeServerExtension(endPoint, parameters, accessToken, callback) {
+    var url = thingifApp.getKiiCloudBaseUrl() + '/server-code/versions/current/' + endPoint;
+
+    var options = {
+      url: url,
+      body: parameters,
+      json: true,
+      method: 'post',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Content-Type': 'application/json',
+        'Accept': '*/*',
+        'Authorization': 'Bearer ' + accessToken
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
+        case 200:
+          return callback(null, response.body);
+          break;
+        default:
+          return callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
   getThingIFApiAuthor: function getThingIFApiAuthor(ownerToken) {
     return new _thingif.APIAuthor(ownerToken, this.getThingIFApp());
   },

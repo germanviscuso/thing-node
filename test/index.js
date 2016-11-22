@@ -1763,6 +1763,42 @@ describe('tests', function () {
       });
     });
   });
+  it('should allow thing to send data to thing scope bucket', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.sendThingScopeObject(thing.getThingID(), false, 'test_bucket', testThingState, thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('objectID');
+        result2.should.have.property('createdAt');
+        result2.should.have.property('dataType');
+        done();
+      });
+    });
+  });
+  it('should allow thing to execute a server extension', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.executeServerExtension('test', testThingState, thing.getAccessToken(), function (error2, result2) {
+        // if(error2)
+          // console.log(error2);
+        should.exist(error2);
+        should.not.exist(result2);
+        assert(error2.errorCode == 'SERVER_CODE_VERSION_NOT_FOUND');
+        done();
+      });
+    });
+  });
   it('should allow owner to get the vendor thing id of the thing', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
