@@ -175,9 +175,9 @@ describe('tests', function () {
     thingNode.getThingIFSDKVersion().should.be.a('string');
   });
   it('should have the SDK parameters filled in previous to initialization', function () {
-    assert(config.kii.appId, 'kii app id has been filled in ../config.js or as environment variable');
-    assert(config.kii.appKey, 'kii app key has been filled in ../config.js or as environment variable');
-    assert(config.kii.appSite, 'kii app site has been filled in ../config.js or as environment variable');
+    assert(config.kii.appId, 'KII_APP_ID has been filled in ../config.js or as environment variable');
+    assert(config.kii.appKey, 'KII_APP_KEY has been filled in ../config.js or as environment variable');
+    assert(config.kii.appSite, 'KII_APP_SITE has been filled in ../config.js or as environment variable');
   });
   it('should have the SDKs initialized', function () {
     thingNode.initialize(config.kii.appId, config.kii.appKey, config.kii.appSite);
@@ -679,6 +679,24 @@ describe('tests', function () {
         should.exist(result2);
         result2.should.have.property('installationID');
         result2.should.have.property('installationRegistrationID');
+        done();
+      });
+    });
+  });
+  it('should allow to get push installations by thing', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      should.exist(tempInstallationId);
+      thingNode.getThingPushes(thing.getAccessToken(), thing.getThingID(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('installations');
         done();
       });
     });

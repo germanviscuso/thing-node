@@ -613,13 +613,13 @@ module.exports = {
   isErrorUnknownThing: function isErrorUnknownThing(object) {
     return object.constructor.name == 'Error' && (object.message.indexOf('statusCode: 400 error code: invalid_grant') > -1 || object.message.indexOf('THING_NOT_FOUND') > -1);
   },
-  installThingPush: function installThingPush(thingAccessToken, productionEnvironment, callback) {
+  installThingPush: function installThingPush(accessToken, productionEnvironment, callback) {
     var contentType = 'application/vnd.kii.InstallationCreationRequest+json';
 
     var options = {
       url: thingifApp.getKiiCloudBaseUrl() + '/installations',
       body: {
-        deviceType: 'MQTT',
+        deviceType: 'MQTT', // TODO provide this as parameter to cover other types
         development: !productionEnvironment
       },
       json: true,
@@ -627,7 +627,7 @@ module.exports = {
       headers: {
         'X-Kii-AppID': _kii.Kii.getAppID(),
         'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + thingAccessToken,
+        'Authorization': 'Bearer ' + accessToken,
         'Content-Type': contentType,
         'Accept': '*/*'
       }
@@ -645,7 +645,7 @@ module.exports = {
 
     request(options, _callback);
   },
-  getThingPush: function getThingPush(thingAccessToken, installationId, callback) {
+  getThingPush: function getThingPush(accessToken, installationId, callback) {
     var options = {
       url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId,
       json: true,
@@ -653,7 +653,7 @@ module.exports = {
       headers: {
         'X-Kii-AppID': _kii.Kii.getAppID(),
         'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + thingAccessToken,
+        'Authorization': 'Bearer ' + accessToken,
         'Accept': '*/*'
       }
     };
@@ -670,7 +670,32 @@ module.exports = {
 
     request(options, _callback);
   },
-  deleteThingPush: function deleteThingPush(thingAccessToken, installationId, callback) {
+  getThingPushes: function getThingPushes(accessToken, thingId, callback) {
+    var options = {
+      url: thingifApp.getKiiCloudBaseUrl() + '/installations/?thingID=' + thingId,
+      json: true,
+      method: 'get',
+      headers: {
+        'X-Kii-AppID': _kii.Kii.getAppID(),
+        'X-Kii-AppKey': _kii.Kii.getAppKey(),
+        'Authorization': 'Bearer ' + accessToken,
+        'Accept': '*/*'
+      }
+    };
+
+    function _callback(error, response) {
+      if (error) return callback(error, null);else switch (response.statusCode) {
+        case 200:
+          return callback(null, response.body);
+          break;
+        default:
+          return callback(response.body, null);
+      }
+    }
+
+    request(options, _callback);
+  },
+  deleteThingPush: function deleteThingPush(accessToken, installationId, callback) {
     var options = {
       url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId,
       json: true,
@@ -678,7 +703,7 @@ module.exports = {
       headers: {
         'X-Kii-AppID': _kii.Kii.getAppID(),
         'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + thingAccessToken,
+        'Authorization': 'Bearer ' + accessToken,
         'Accept': '*/*'
       }
     };
