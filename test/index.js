@@ -1102,7 +1102,7 @@ describe('tests', function () {
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.getLatestThingState(thing.getThingID(), thing.getAccessToken(), function (error2, result2) {
+      thingNode.getThingState(thing.getThingID(), thing.getAccessToken(), function (error2, result2) {
         if(error2)
           console.log(error2);
         should.not.exist(error2);
@@ -1116,6 +1116,27 @@ describe('tests', function () {
       });
     });
   });
+  /*it('should allow thing to get thing states via query', function (done) {
+    thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
+      if(error)
+        console.log(error);
+      should.not.exist(error);
+      let thing = result;
+      should.exist(thing);
+      thingNode.getThingStates(thing.getThingID(), thing.getAccessToken(), function (error2, result2) {
+        if(error2)
+          console.log(error2);
+        should.not.exist(error2);
+        should.exist(result2);
+        result2.should.have.property('power');
+        result2.should.have.property('presetTemperature');
+        result2.should.have.property('fanspeed');
+        result2.should.have.property('currentTemperature');
+        result2.should.have.property('currentHumidity');
+        done();
+      });
+    });
+  });*/
   it('should allow owner to register thing state', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
@@ -1144,7 +1165,7 @@ describe('tests', function () {
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.getLatestThingState(thing.getThingID(), currentUser.getAccessToken(), function (error2, result2) {
+      thingNode.getThingState(thing.getThingID(), currentUser.getAccessToken(), function (error2, result2) {
         if(error2)
           console.log(error2);
         should.not.exist(error2);

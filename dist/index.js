@@ -14,13 +14,49 @@ var _kii = require('kii-cloud-sdk').create();
 
 var request = require('request');
 var mqtt = require('mqtt');
-var thingifApp = null;
+var thingifApp;
 
 console.log('Kii JS SDK v' + _kii.Kii.getSDKVersion());
 console.log('Kii JS Thing-IF SDK v' + _thingif.getSDKVersion());
 
 // patch until issue 604 is fixed
 // _kii.KiiThingWithToken.prototype.getAccessToken = function () { if (this._accessToken) return this._accessToken; else return this._adminToken; };
+
+function _buildRequestOptions(url, method, body, contentType, accessToken) {
+  var options = {
+    url: url,
+    json: true,
+    headers: {
+      'X-Kii-AppID': _kii.Kii.getAppID(),
+      'X-Kii-AppKey': _kii.Kii.getAppKey(),
+      'Accept': '*/*'
+    }
+  };
+  if (method) options.method = method;
+  if (body) options.body = body;
+  if (contentType) options.headers["Content-Type"] = contentType;
+  if (accessToken) options.headers["Authorization"] = 'Bearer ' + accessToken;
+  return options;
+}
+
+function _sendRequest(url, contentType, method, body, successResponseCode, emptyResponse, accessToken, outerCallback) {
+  var options = _buildRequestOptions(url, method, body, contentType, accessToken);
+  function innerCallback(error, response) {
+    if (error) return outerCallback(error, null);else switch (response.statusCode) {
+      case successResponseCode:
+        if (emptyResponse) return outerCallback(null, true);else return outerCallback(null, response.body);
+        break;
+      default:
+        return outerCallback(response.body, null);
+    }
+  }
+  request(options, innerCallback);
+}
+
+function _sendRequestWithCallback(url, contentType, method, body, accessToken, innerCallback) {
+  var options = _buildRequestOptions(url, method, body, contentType, accessToken);
+  request(options, innerCallback);
+}
 
 module.exports = {
 
@@ -293,6 +329,7 @@ module.exports = {
   },
   registerOwnerSimpleFlow: function registerOwnerSimpleFlow(vendorThingId, userOrGroup, callback) {
     var url = thingifApp.getKiiCloudBaseUrl() + '/things/VENDOR_THING_ID:' + vendorThingId + '/ownership';
+    var method = 'put';
     var accessToken = void 0;
 
     if (this.isKiiUser(userOrGroup)) {
@@ -311,33 +348,11 @@ module.exports = {
         return callback("Candidate owner must be a Kii user or group", null);
       }
     }
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'put',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, null, method, null, 204, true, accessToken, callback);
   },
   registerOwnerRequestPin: function registerOwnerRequestPin(thing, userOrGroup, initiatedByThing, callback) {
     var url = thingifApp.getKiiCloudBaseUrl() + '/things/' + thing.getThingID() + '/ownership/request';
+    var method = 'post';
     var accessToken = void 0,
         currentUser = void 0;
 
@@ -358,33 +373,15 @@ module.exports = {
     if (initiatedByThing) accessToken = thing.getAccessToken();else {
       if (!currentUser) accessToken = userOrGroup.getAccessToken();else accessToken = currentUser.getAccessToken();
     }
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, null, method, null, 200, false, accessToken, callback);
   },
   registerOwnerValidatePin: function registerOwnerValidatePin(thing, pinCode, initiatedByUser, callback) {
+    var url = thingifApp.getKiiCloudBaseUrl() + '/things/' + thing.getThingID() + '/ownership/confirm';
     var contentType = 'application/vnd.kii.ThingOwnershipConfirmationRequest+json';
+    var method = 'post';
+    var body = {
+      code: pinCode
+    };
     var accessToken = void 0,
         currentUser = void 0;
 
@@ -395,34 +392,7 @@ module.exports = {
       }
       accessToken = currentUser.getAccessToken();
     }
-
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/things/' + thing.getThingID() + '/ownership/confirm',
-      body: {
-        code: pinCode
-      },
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 204, true, accessToken, callback);
   },
   unregisterOwner: function unregisterOwner(thing, userOrGroup, callback) {
     thing.unregisterOwner(userOrGroup, {
@@ -435,29 +405,10 @@ module.exports = {
     });
   },
   listThingOwners: function listThingOwners(thing, callback) {
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + thing.getVendorThingID() + '/ownership',
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + thing.getAccessToken(),
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {// no body available in this call
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var url = thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + thing.getVendorThingID() + '/ownership';
+    var method = 'get';
+    var accessToken = thing.getAccessToken();
+    _sendRequest(url, null, method, null, 200, false, accessToken, callback);
   },
   enableThing: function enableThing(thing, callback) {
     thing.enable({
@@ -508,7 +459,7 @@ module.exports = {
     if (!currentUser) {
       return callback('No Kii user: app user must be logged in', null);
     } else {
-      var _callback = function _callback(error, response) {
+      var innerCallback = function innerCallback(error, response) {
         if (error) return callback(error, null);else switch (response.statusCode) {// no body available in this call
           case 204:
             return callback(null, true);
@@ -521,46 +472,18 @@ module.exports = {
         }
       };
 
-      var options = {
-        url: thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId,
-        json: true,
-        method: 'head',
-        headers: {
-          'X-Kii-AppID': _kii.Kii.getAppID(),
-          'X-Kii-AppKey': _kii.Kii.getAppKey(),
-          'Authorization': 'Bearer ' + currentUser.getAccessToken(),
-          'Accept': '*/*'
-        }
-      };
+      var url = thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId;
+      var method = 'head';
+      var accessToken = currentUser.getAccessToken();
 
-      request(options, _callback);
+      _sendRequestWithCallback(url, null, method, null, accessToken, innerCallback);
     }
   },
   getThingInfo: function getThingInfo(vendorThingId, accessToken, callback) {
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Content-Type': 'Content-Type: application/vnd.kii.ThingRetrievalRequest+json',
-        'Authorization': 'Bearer ' + accessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var url = thingifApp.getKiiCloudBaseUrl() + '/things/' + 'VENDOR_THING_ID:' + vendorThingId;
+    var contentType = 'application/vnd.kii.ThingRetrievalRequest+json';
+    var method = 'get';
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
   },
   connectMqtt: function connectMqtt(serverUrl, port, username, password, clientId) {
     var client = mqtt.connect(serverUrl, {
@@ -614,126 +537,34 @@ module.exports = {
     return object.constructor.name == 'Error' && (object.message.indexOf('statusCode: 400 error code: invalid_grant') > -1 || object.message.indexOf('THING_NOT_FOUND') > -1);
   },
   installThingPush: function installThingPush(accessToken, productionEnvironment, callback) {
+    var url = thingifApp.getKiiCloudBaseUrl() + '/installations';
     var contentType = 'application/vnd.kii.InstallationCreationRequest+json';
-
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/installations',
-      body: {
-        deviceType: 'MQTT', // TODO provide this as parameter to cover other types
-        development: !productionEnvironment
-      },
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
+    var method = 'post';
+    var body = {
+      deviceType: 'MQTT', // TODO provide this as parameter to cover other types
+      development: !productionEnvironment
     };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 201:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 201, false, accessToken, callback);
   },
   getThingPush: function getThingPush(accessToken, installationId, callback) {
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var url = thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId;
+    var method = 'get';
+    _sendRequest(url, null, method, null, 200, false, accessToken, callback);
   },
   getThingPushes: function getThingPushes(accessToken, thingId, callback) {
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/installations/?thingID=' + thingId,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var url = thingifApp.getKiiCloudBaseUrl() + '/installations/?thingID=' + thingId;
+    var method = 'get';
+    _sendRequest(url, null, method, null, 200, false, accessToken, callback);
   },
   deleteThingPush: function deleteThingPush(accessToken, installationId, callback) {
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId,
-      json: true,
-      method: 'delete',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var url = thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId;
+    var method = 'delete';
+    _sendRequest(url, null, method, null, 204, true, accessToken, callback);
   },
-  getMQTTEndpoint: function getMQTTEndpoint(thingAccessToken, installationId, callback) {
-    var options = {
-      url: thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId + '/mqtt-endpoint',
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + thingAccessToken,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
+  getMQTTEndpoint: function getMQTTEndpoint(accessToken, installationId, callback) {
+    var url = thingifApp.getKiiCloudBaseUrl() + '/installations/' + installationId + '/mqtt-endpoint';
+    var method = 'get';
+    function innerCallback(error, response) {
       if (error) return callback(error, null);else switch (response.statusCode) {
         case 200:
         case 503:
@@ -743,8 +574,7 @@ module.exports = {
           return callback(response.body, null);
       }
     }
-
-    request(options, _callback);
+    _sendRequestWithCallback(url, null, method, null, accessToken, innerCallback);
   },
   onboardWithVendorThingIdByUser: function onboardWithVendorThingIdByUser(vendorThingId, thingPassword, user, thingType, thingProperties, firmwareVersion, dataGroupingInterval, layoutPosition, callback) {
     var accessToken = user.getAccessToken();
@@ -761,10 +591,9 @@ module.exports = {
     apiAuthor.onboardWithThingID(request, callback);
   },
   onboardWithVendorThingIdByThing: function onboardWithVendorThingIdByThing(vendorThingId, thingPassword, thingType, thingProperties, dataGroupingInterval, layoutPosition, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/onboardings';
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByThing+json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
+    var method = 'post';
     var body = {
       vendorThingID: vendorThingId,
       thingPassword: thingPassword,
@@ -773,38 +602,12 @@ module.exports = {
       layoutPosition: layoutPosition,
       dataGroupingInterval: dataGroupingInterval
     };
-
-    var options = {
-      url: url,
-      body: body,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 200, false, accessToken, callback);
   },
   onboardWithThingIdByThing: function onboardWithThingIdByThing(thingId, thingPassword, thingType, thingProperties, dataGroupingInterval, layoutPosition, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/onboardings';
     var contentType = 'application/vnd.kii.OnboardingWithThingIDByThing+json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
+    var method = 'post';
     var body = {
       thingID: thingId,
       thingPassword: thingPassword,
@@ -813,38 +616,12 @@ module.exports = {
       layoutPosition: layoutPosition,
       dataGroupingInterval: dataGroupingInterval
     };
-
-    var options = {
-      url: url,
-      body: body,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 200, false, accessToken, callback);
   },
   onboardWithThingIdByOwner: function onboardWithThingIdByOwner(thingId, thingPassword, thingType, thingProperties, userId, dataGroupingInterval, layoutPosition, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/onboardings';
     var contentType = 'application/vnd.kii.OnboardingWithThingIDByOwner+json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
+    var method = 'post';
     var body = {
       thingID: thingId,
       thingPassword: thingPassword
@@ -854,38 +631,12 @@ module.exports = {
     if (userId) body.owner = 'USER:' + userId;
     if (layoutPosition) body.layoutPosition = layoutPosition;
     if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
-
-    var options = {
-      url: url,
-      body: body,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 200, false, accessToken, callback);
   },
   onboardWithVendorThingIdByOwner: function onboardWithVendorThingIdByOwner(vendorThingId, thingPassword, thingType, thingProperties, userId, dataGroupingInterval, layoutPosition, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/onboardings';
     var contentType = 'application/vnd.kii.OnboardingWithVendorThingIDByOwner+json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
+    var method = 'post';
     var body = {
       vendorThingID: vendorThingId,
       thingPassword: thingPassword
@@ -895,41 +646,15 @@ module.exports = {
     if (userId) body.owner = 'USER:' + userId;
     if (layoutPosition) body.layoutPosition = layoutPosition;
     if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
-
-    var options = {
-      url: url,
-      body: body,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 200, false, accessToken, callback);
   },
   onboardMyself: function onboardMyself(thing, thingPassword, callback) {
     this.onboardWithVendorThingIdByThing(thing.getVendorThingID(), thingPassword, '', {}, '1_MINUTE', 'STANDALONE', thing.getAccessToken(), callback);
   },
   onboardEndNodeWithGatewayVendorThingId: function onboardEndNodeWithGatewayVendorThingId(endNodeVendorThingId, endNodePassword, gatewayVendorThingId, endNodeThingProperties, endNodeThingType, userId, dataGroupingInterval, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/onboardings';
     var contentType = 'application/vnd.kii.OnboardingEndNodeWithGatewayVendorThingID+json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
+    var method = 'post';
     var body = {
       endNodeVendorThingID: endNodeVendorThingId,
       endNodePassword: endNodePassword
@@ -939,38 +664,12 @@ module.exports = {
     if (userId) body.owner = 'USER:' + userId;
     if (gatewayVendorThingId) body.gatewayVendorThingID = gatewayVendorThingId;
     if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
-
-    var options = {
-      url: url,
-      body: body,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 200, false, accessToken, callback);
   },
   onboardEndNodeWithGatewayThingId: function onboardEndNodeWithGatewayThingId(endNodeVendorThingId, endNodePassword, gatewayThingId, endNodeThingProperties, endNodeThingType, userId, dataGroupingInterval, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/onboardings';
     var contentType = 'application/vnd.kii.OnboardingEndNodeWithGatewayThingID+json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/onboardings';
-
+    var method = 'post';
     var body = {
       endNodeVendorThingID: endNodeVendorThingId,
       endNodePassword: endNodePassword
@@ -980,53 +679,13 @@ module.exports = {
     if (userId) body.owner = 'USER:' + userId;
     if (gatewayThingId) body.gatewayThingID = gatewayThingId;
     if (dataGroupingInterval) body.dataGroupingInterval = dataGroupingInterval;
-
-    var options = {
-      url: url,
-      body: body,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, body, 200, false, accessToken, callback);
   },
   registerThingState: function registerThingState(thingId, thingState, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/states';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/states';
-
-    var options = {
-      url: url,
-      body: thingState,
-      json: true,
-      method: 'put',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
+    var method = 'put';
+    function innerCallback(error, response) {
       if (error) return callback(error, null);else switch (response.statusCode) {
         case 201:
         case 204:
@@ -1036,38 +695,19 @@ module.exports = {
           return callback(response.body, null);
       }
     }
-
-    request(options, _callback);
+    _sendRequestWithCallback(url, contentType, method, thingState, accessToken, innerCallback);
   },
-  getLatestThingState: function getLatestThingState(thingId, accessToken, callback) {
+  getThingState: function getThingState(thingId, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/states';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/states';
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'get';
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
+  },
+  getThingStates: function getThingStates(thingId, query, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/states/query';
+    var contentType = 'application/json';
+    var method = 'post';
+    _sendRequest(url, contentType, method, query, 200, false, accessToken, callback);
   },
   sendThingCommandWithParameters: function sendThingCommandWithParameters(schemaName, schemaVersion, commandActions, userId, thingId, accessToken, callback) {
     var apiAuthor = this.getThingIFApiAuthor(accessToken);
@@ -1081,375 +721,85 @@ module.exports = {
     this.sendThingCommandWithParameters(thingCommand.schema, thingCommand.schemaVersion, thingCommand.actions, thingCommand.issuer.replace('user:', ''), thingId, accessToken, callback);
   },
   sendThingCommandResult: function sendThingCommandResult(thingId, thingCommandResult, commandId, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/commands/' + commandId + '/action-results';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/commands/' + commandId + '/action-results';
-
-    var options = {
-      url: url,
-      body: thingCommandResult,
-      json: true,
-      method: 'put',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'put';
+    _sendRequest(url, contentType, method, thingCommandResult, 204, true, accessToken, callback);
   },
   getThingCommandWithResult: function getThingCommandWithResult(thingId, commandId, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/commands/' + commandId;
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/commands/' + commandId;
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'get';
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
   },
   getThingCommandsWithResults: function getThingCommandsWithResults(thingId, paginationKey, bestEffortLimit, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/commands';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/commands';
+    var method = 'get';
     if (paginationKey) url += '?paginationKey=' + paginationKey;
     if (bestEffortLimit) url += '?bestEffortLimit=' + bestEffortLimit;
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
   },
   registerThingTrigger: function registerThingTrigger(thingId, trigger, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers';
-
-    var options = {
-      url: url,
-      body: trigger,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 201:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'post';
+    _sendRequest(url, contentType, method, trigger, 201, false, accessToken, callback);
   },
   getThingTriggerServerCodeResult: function getThingTriggerServerCodeResult(thingId, paginationKey, bestEffortLimit, triggerId, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers/' + triggerId + '/results/server-code';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId + '/results/server-code';
+    var method = 'get';
     if (paginationKey) url += '?paginationKey=' + paginationKey;
     if (bestEffortLimit) url += '?bestEffortLimit=' + bestEffortLimit;
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
   },
   enableOrDisableThingTrigger: function enableOrDisableThingTrigger(thingId, triggerId, enable, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
+    var method = 'put';
     if (enable) url += '/enable';else url += '/disable';
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'put',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, null, 204, true, accessToken, callback);
   },
   deleteThingTrigger: function deleteThingTrigger(thingId, triggerId, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'delete',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'delete';
+    _sendRequest(url, contentType, method, null, 204, true, accessToken, callback);
   },
   updateThingTrigger: function updateThingTrigger(thingId, triggerId, trigger, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
-
-    var options = {
-      url: url,
-      json: true,
-      body: trigger,
-      method: 'patch',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'patch';
+    _sendRequest(url, contentType, method, trigger, 204, true, accessToken, callback);
   },
   getThingTrigger: function getThingTrigger(thingId, triggerId, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers/' + triggerId;
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers/' + triggerId;
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var method = 'get';
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
   },
   getThingTriggers: function getThingTriggers(thingId, paginationKey, bestEffortLimit, accessToken, callback) {
+    var url = thingifApp.getThingIFBaseUrl() + '/targets/thing:' + thingId + '/triggers';
     var contentType = 'application/json';
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/targets/thing:' + thingId + '/triggers';
+    var method = 'get';
     if (paginationKey) url += '?paginationKey=' + paginationKey;
     if (bestEffortLimit) url += '?bestEffortLimit=' + bestEffortLimit;
-
-    var options = {
-      url: url,
-      json: true,
-      method: 'get',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': contentType,
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, null, 200, false, accessToken, callback);
   },
   sendThingScopeObject: function sendThingScopeObject(thingId, isVendorId, bucketName, data, accessToken, callback) {
-    var contentType = 'application/vnd.' + _kii.Kii.getAppID() + '.' + bucketName + '+json';
     var url = thingifApp.getKiiCloudBaseUrl() + '/things/';
+    var contentType = 'application/vnd.' + _kii.Kii.getAppID() + '.' + bucketName + '+json';
+    var method = 'post';
     if (isVendorId) url += 'VENDOR_THING_ID:' + thingId;else url += thingId;
     url += '/buckets/' + bucketName + '/objects';
-
-    var options = {
-      url: url,
-      body: data,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Content-Type': contentType,
-        'Accept': '*/*',
-        'Authorization': 'Bearer ' + accessToken
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 201:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    _sendRequest(url, contentType, method, data, 201, false, accessToken, callback);
   },
   executeServerExtension: function executeServerExtension(endPoint, parameters, accessToken, callback) {
     var url = thingifApp.getKiiCloudBaseUrl() + '/server-code/versions/current/' + endPoint;
-
-    var options = {
-      url: url,
-      body: parameters,
-      json: true,
-      method: 'post',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Content-Type': 'application/json',
-        'Accept': '*/*',
-        'Authorization': 'Bearer ' + accessToken
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 200:
-          return callback(null, response.body);
-          break;
-        default:
-          return callback(response.body, null);
-      }
-    }
-
-    request(options, _callback);
+    var contentType = 'application/json';
+    var method = 'post';
+    _sendRequest(url, contentType, method, parameters, 200, false, accessToken, callback);
   },
   getThingIFApiAuthor: function getThingIFApiAuthor(ownerToken) {
     return new _thingif.APIAuthor(ownerToken, this.getThingIFApp());
@@ -1474,44 +824,10 @@ module.exports = {
     });
   },
   setThingAsGateway: function setThingAsGateway(thingId, accessToken, callback) {
-    var baseUrl = thingifApp.getThingIFBaseUrl();
-    var url = baseUrl + '/things/' + thingId + '/layout-position';
-    var options = {
-      url: url,
-      body: { 'layoutPosition': 'GATEWAY' },
-      json: true,
-      method: 'put',
-      headers: {
-        'X-Kii-AppID': _kii.Kii.getAppID(),
-        'X-Kii-AppKey': _kii.Kii.getAppKey(),
-        'Authorization': 'Bearer ' + accessToken,
-        'Content-Type': 'application/json',
-        'Accept': '*/*'
-      }
-    };
-
-    function _callback(error, response) {
-      if (error) return callback(error, null);else switch (response.statusCode) {
-        case 204:
-          return callback(null, true);
-          break;
-        case 400:
-          return callback('Specified layoutPosition is not GATEWAY', null);
-          break;
-        case 401:
-          return callback('Failed to authenticate with the given token', null);
-          break;
-        case 404:
-          return callback('Specified thing is not found', null);
-          break;
-        case 409:
-          return callback('Specified Thing is registered as End Node of some Gateway', null);
-          break;
-        default:
-          return callback('Unknown error: ' + response.statusCode, null);
-      }
-    }
-
-    request(options, _callback);
+    var url = thingifApp.getThingIFBaseUrl() + '/things/' + thingId + '/layout-position';
+    var contentType = 'application/json';
+    var method = 'put';
+    var body = { 'layoutPosition': 'GATEWAY' };
+    _sendRequest(url, contentType, method, body, 204, true, accessToken, callback);
   }
 };
