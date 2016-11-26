@@ -130,6 +130,25 @@ const testThingUpdatedTrigger = {
     'hex': '#333'
   }
 };
+const testThingStateQuery = {
+  'query': {
+    'clause': {
+      'type': 'and',
+      'clauses': [
+        {
+          'type': 'range',
+          'field': 'value',
+          'upperLimit': 17.0
+        },
+        {
+          'type': 'eq', 'field': 'sensor',
+          'value': 'TCB'
+        }
+      ]
+    },
+    'grouped': false
+  }
+};
 
 describe('tests', function () {
   var tempPin;
@@ -1116,27 +1135,24 @@ describe('tests', function () {
       });
     });
   });
-  /*it('should allow thing to get thing states via query', function (done) {
+  it('should allow thing to get thing states via query', function (done) {
     thingNode.loadThingWithVendorThingId(testVendorThingId, testThingPassword, function (error, result) {
       if(error)
         console.log(error);
       should.not.exist(error);
       let thing = result;
       should.exist(thing);
-      thingNode.getThingStates(thing.getThingID(), thing.getAccessToken(), function (error2, result2) {
+      thingNode.getThingStates(thing.getThingID(), testThingStateQuery, thing.getAccessToken(), function (error2, result2) {
         if(error2)
           console.log(error2);
         should.not.exist(error2);
         should.exist(result2);
-        result2.should.have.property('power');
-        result2.should.have.property('presetTemperature');
-        result2.should.have.property('fanspeed');
-        result2.should.have.property('currentTemperature');
-        result2.should.have.property('currentHumidity');
+        result2.should.have.property('queryDescription');
+        result2.should.have.property('results');
         done();
       });
     });
-  });*/
+  });
   it('should allow owner to register thing state', function (done) {
     let currentUser = thingNode.getKiiInstance().Kii.getCurrentUser();
     should.exist(currentUser);
