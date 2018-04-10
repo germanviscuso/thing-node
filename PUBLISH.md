@@ -1,4 +1,4 @@
-##Register user with npm (only once)
+## Register user with npm (only once)
 ```
 $ npm set init.author.name "Your Name"
 $ npm set init.author.email "you@example.com"
@@ -6,14 +6,15 @@ $ npm set init.author.url "http://yourblog.com"
 $ npm adduser
 ```
 
-##Freeze package dependency structure
+## Freeze package dependency structure
 Semantic versioning introduces dependency problems to maintain the package
 In order to avoid this, when tests are green do:
 ```
 npm shrinkwrap --dev
 ```
+Both npm and gulp will work with these frozen dependencies (even subdependencies)
 
-##Bump version, push to git and publish on npm
+## Bump version, push to git and publish on npm
 ```
 $ git add
 $ npm version [<newversion> | major | minor | patch] -m "Your commit message"
@@ -21,4 +22,5 @@ $ git push --follow-tags
 # ATTENTION: There is no turning back here.
 $ npm publish
 ```
+"npm version" takes care of modyfing package.json and, if present, npm-shrinkwrap.json
 

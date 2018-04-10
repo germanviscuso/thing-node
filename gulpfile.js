@@ -24,7 +24,11 @@ gulp.task('static', function () {
 });
 
 gulp.task('nsp', function (cb) {
-  nsp({package: path.resolve('package.json')}, cb);
+  nsp({
+    shrinkwrap: path.resolve('npm-shrinkwrap.json'),
+    package: path.resolve('package.json'),
+    stopOnError: false
+  }, cb);
 });
 
 gulp.task('pre-test', function () {

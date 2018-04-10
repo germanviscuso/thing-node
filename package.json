@@ -1,6 +1,6 @@
 {
   "name": "thing-node",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A Kii enabled IoT library for node.js capable Things",
   "homepage": "https://github.com/germanviscuso/thing-node",
   "author": {
